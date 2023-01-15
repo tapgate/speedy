@@ -2,7 +2,7 @@
   "name": "tapgate-speedy",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://tapgate.github.io/tapgate-speedy",
+  "homepage": "https://tapgate.github.io/speedy",
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -31,7 +31,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
+    "predeploy": "yarn run build",
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
