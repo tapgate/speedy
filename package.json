@@ -2,7 +2,7 @@
   "name": "tapgate-speedy",
   "version": "0.1.2",
   "private": true,
-  "homepage": "https://speedy.tapgate.io",
+  "homepage": "https://speedy.tapgate.io/speedy",
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
