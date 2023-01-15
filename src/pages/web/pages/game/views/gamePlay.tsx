@@ -61,7 +61,7 @@ const GamePlayView = () => {
         </div>
       </div>
 
-      <div className="w-full h-[15vh] grid grid-rows-2 gap-y-4 p-4">
+      <div className="w-full h-[150px] grid grid-rows-2 gap-y-4 p-4">
         <div
           className="flex justify-between items-center bg-tapgate-black rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
           onClick={() => game.triggerEvent(GameEventTrigger.HIT)}>
@@ -137,12 +137,12 @@ const GamePlayView = () => {
 
       <div className="w-full grid grid-cols-2 gap-x-4 p-4">
         <div
-          className="w-full h-[50px] flex items-center justify-center bg-tapgate-red text-tapgate-white rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
+          className="w-full h-[51px] flex items-center justify-center bg-tapgate-red text-tapgate-white rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
           onClick={() => game.triggerEvent(GameEventTrigger.QUIT)}>
           Quit
         </div>
         <div
-          className="w-full h-[50px] flex items-center justify-center bg-tapgate-blue-700 text-tapgate-white rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
+          className="w-full h-[51px] flex items-center justify-center bg-tapgate-blue-700 text-tapgate-white rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
           onClick={() => game.triggerEvent(GameEventTrigger.RESTART)}>
           Restart
         </div>
