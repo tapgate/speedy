@@ -55,28 +55,27 @@ const GameModeSelectView = () => {
   };
 
   return (
-    <div className="w-full h-full flex justify-center items-center px-8 overflow-y-auto">
-      <div>
-        {/* Start Logo Area */}
+    <div className="w-full h-full flex flex-wrap gap-y-4 justify-center items-center overflow-y-auto p-6">
+      {/* Start Logo Area */}
+      <div className="w-full h-1/4 flex flex-wrap items-center justify-center">
         <div className="w-full h-full flex flex-wrap items-center justify-center">
-          <div className="w-full h-full max-h-[200px] py-6 flex flex-wrap items-center justify-center">
-            <div className="w-full h-1/3 h-[75px] flex justify-center items-center">
-              <img src="/logo.svg" className="h-full" alt="Tapgate Logo" />
-            </div>
-            <div className="w-fulll flex justify-center items-center text-tapgate-blue font-black tracking-widest text-4xl">
-              SPEED TEST
-            </div>
-            <div className="w-full text-sm text-center p-2 text-tapgate-gray-100">
-              Increase Your Agillity And Speed
-            </div>
+          <div className="w-full h-1/3 h-[75px] flex justify-center items-center">
+            <img src="/logo.svg" className="h-full" alt="Tapgate Logo" />
+          </div>
+          <div className="w-fulll flex justify-center items-center text-tapgate-blue font-black tracking-widest text-4xl">
+            SPEED TEST
+          </div>
+          <div className="w-full text-sm text-center p-2 text-tapgate-gray-100">
+            Increase Your Agillity And Speed
           </div>
         </div>
-        {/* End Logo Area */}
-
+      </div>
+      {/* End Logo Area */}
+      <div className="w-full h-3/4 grid grid-cols-1">
         {/* Start Button Area */}
         {modes.map((mode, index) => {
           return (
-            <div key={index} className="flex p-4 h-[150px]">
+            <div key={index} className="flex p-4">
               <div
                 onClick={() => selectMode(mode)}
                 className="w-full h-full cursor-pointer bg-gradient-to-r from-tapgate-gray-600 via-tapgate-gray-500 to-tapgate-gray-600 backdrop-blur-lg border-4 active:opacity-75 active:scale-95 border-tapgate-gray-700/25 rounded-xl">
