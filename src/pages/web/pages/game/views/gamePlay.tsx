@@ -11,7 +11,7 @@ const GamePlayView = () => {
   const [showPoints, setShowPoints] = useState(false);
 
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-y-auto pb-[93px]">
       <div className="w-full h-[100px] bg-tapgate-gray-200 text-tapgate-gray-800 text-md rounded-b-lg">
         <div className="w-full h-1/2 flex justify-between items-center p-4 bg-tapgate-white-300 text-tapgate-gray-500 rounded-b-lg shadow-md">
           <div className="">Player</div>
@@ -31,21 +31,11 @@ const GamePlayView = () => {
         </div>
       </div>
 
-      <div className="w-full p-4">
+      <div className="w-full p-4 pb-0">
         <div className="mb-1">Get ready to tap the buy button as fast as you can!</div>
         <div>
           Once the time drops to <span className="text-tapgate-yellow-300 font-bold">0</span> you
-          will be able to click the buy button.
-        </div>
-        <div>The faster you click the buy button the more points you will get.</div>
-        <div>
-          If you click the buy button after{' '}
-          <span className="text-tapgate-green-300 font-bold">{game.mode?.speed} ms</span> you will
-          get <span className="text-tapgate-red-300 font-bold">0 points</span>.
-        </div>
-        <div>
-          You have only 3 lives. So make sure you don't click the buy button before or after{' '}
-          <span className="text-tapgate-green-300 font-bold">{game.mode?.speed} ms</span>
+          will be able to click the buy button
           {!showPoints && (
             <>
               ...{' '}
@@ -57,26 +47,38 @@ const GamePlayView = () => {
         </div>
 
         {showPoints && (
-          <div className="mt-2">
-            <div className="flex justify-between mb-1">
-              <div>Speed</div>
-              <div>Point (s)</div>
+          <>
+            <div>The faster you click the buy button the more points you will get.</div>
+            <div>
+              If you click the buy button after{' '}
+              <span className="text-tapgate-green-300 font-bold">{game.mode?.speed} ms</span> you
+              will get <span className="text-tapgate-red-300 font-bold">0 points</span>.
             </div>
-            {game.pointsArray?.map((pointsArray) => {
-              return (
-                <div key={pointsArray.join('-')} className="flex justify-between">
-                  <div>{pointsArray[0]} ms</div>
-                  <div>{pointsArray[1]}</div>
+            <div>
+              You have only 3 lives. So make sure you don't click the buy button before or after{' '}
+              <span className="text-tapgate-green-300 font-bold">{game.mode?.speed} ms</span>
+            </div>
+            <div className="mt-2">
+              <div className="flex justify-between mb-1">
+                <div>Speed</div>
+                <div>Point (s)</div>
+              </div>
+              {game.pointsArray?.map((pointsArray) => {
+                return (
+                  <div key={pointsArray.join('-')} className="flex justify-between">
+                    <div>{pointsArray[0]} ms</div>
+                    <div>{pointsArray[1]}</div>
+                  </div>
+                );
+              })}
+              <div className="flex justify-between items-center">
+                ....
+                <div className="text-tapgate-blue-700" onClick={() => setShowPoints(false)}>
+                  less
                 </div>
-              );
-            })}
-            <div className="flex justify-between items-center">
-              ....
-              <div className="text-tapgate-blue-700" onClick={() => setShowPoints(false)}>
-                less
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -154,7 +156,7 @@ const GamePlayView = () => {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-2 gap-x-4 p-4">
+      <div className="fixed bottom-0 bg-tapgate-black w-full h-[83px] grid grid-cols-2 gap-x-4 p-4">
         <div
           className="w-full h-[51px] flex items-center justify-center bg-tapgate-red text-tapgate-white rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
           onClick={() => game.triggerEvent(GameEventTrigger.QUIT)}>
