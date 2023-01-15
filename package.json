@@ -2,7 +2,7 @@
   "name": "tapgate-speedy",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://tapgate.github.io/tapgate-speedy",
+  "homepage": "https://tapgate.github.io/speedy",
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
@@ -31,8 +31,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "predeploy": "yarn run build",
+    "deploy": "gh-pages -d build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "eslintConfig": {
     "extends": [
@@ -53,8 +56,16 @@
     ]
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
     "autoprefixer": "^10.4.13",
+    "eslint": "^8.31.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "postcss": "^8.4.21",
+    "prettier": "^2.8.3",
     "tailwindcss": "^3.2.4"
   }
 }

@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-  
+import React from 'react';
+
 const HomePage = () => {
   return (
     <div>
@@ -8,5 +7,5 @@ const HomePage = () => {
     </div>
   );
 };
-  
+
 export default HomePage;

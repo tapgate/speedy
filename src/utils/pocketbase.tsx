@@ -1,4 +1,4 @@
-import PocketBase from "pocketbase";
+import PocketBase from 'pocketbase';
 
 export interface PocketbaseErrorData {
   [key: string]: PocketBaseErrorInfo;
@@ -18,7 +18,7 @@ class PocketbaseSingleton {
 
   private constructor() {
     this.pocketbase = new PocketBase(process.env.REACT_APP_POCKETBASE_URL);
-    this.adminAuth = localStorage.getItem("pocketbase_auth")
+    this.adminAuth = localStorage.getItem('pocketbase_auth');
   }
 
   public static getInstance(): PocketbaseSingleton {
@@ -28,7 +28,7 @@ class PocketbaseSingleton {
     return PocketbaseSingleton.instance;
   }
 
-private async loginAdmin(): Promise<PocketBase> {
+  private async loginAdmin(): Promise<PocketBase> {
     try {
       this.adminAuth = await this.pocketbase.admins.authWithPassword(
         `${process.env.REACT_APP_POCKETBASE_ADMIN_USERNAME}`,
@@ -38,41 +38,45 @@ private async loginAdmin(): Promise<PocketBase> {
       console.log({ adminAuth: this.adminAuth });
       return this.pocketbase;
     } catch (error) {
-      console.log("error in admin pocketbase token", error);
-      throw new Error("Error connecting to Pocketbase");
+      console.log('error in admin pocketbase token', error);
+      throw new Error('Error connecting to Pocketbase');
     }
   }
 
   public async connection(): Promise<PocketBase> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      const run = async () => {
         try {
-            if (process.env.REACT_APP_CLIENT === "server") {
-              if (!this.adminAuth) {
-                  console.log("login admin pocketbase token");
-                  await this.loginAdmin();
-              } else {
-                try {
-                  console.log("refresh admin pocketbase token");
-                  this.adminAuth = await this.pocketbase.admins.authRefresh({ $autoCancel: false });
-                  console.log({ adminAuth: this.adminAuth });
-                } catch (error) {
-                  await this.loginAdmin();
-                }
-              }
-              console.log("logged in admin pocketbase token");
-              resolve(this.pocketbase)
+          if (process.env.REACT_APP_CLIENT === 'server') {
+            if (!this.adminAuth) {
+              console.log('login admin pocketbase token');
+              await this.loginAdmin();
             } else {
-              resolve(this.pocketbase)
+              try {
+                console.log('refresh admin pocketbase token');
+                this.adminAuth = await this.pocketbase.admins.authRefresh({ $autoCancel: false });
+                console.log({ adminAuth: this.adminAuth });
+              } catch (error) {
+                await this.loginAdmin();
+              }
             }
-          } catch (error) {
-            console.log("error in admin pocketbase token", error);
-            reject("Error connecting to Pocketbase");
+            console.log('logged in admin pocketbase token');
+            resolve(this.pocketbase);
+          } else {
+            resolve(this.pocketbase);
           }
+        } catch (error) {
+          console.log('error in admin pocketbase token', error);
+          reject('Error connecting to Pocketbase');
+        }
+      };
+
+      run();
     });
   }
 }
 
-let pocketbaseAdmin = PocketbaseSingleton.getInstance();
+const pocketbaseAdmin = PocketbaseSingleton.getInstance();
 
 const pocketbaseAdminConnection = pocketbaseAdmin.connection();
 
