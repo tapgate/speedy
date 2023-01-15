@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Icon } from '../../../../../components/icons';
 import { GameEventTrigger, GameState, useGame } from '../../../../../context/game';
 import { useUser } from '../../../../../context/user';
@@ -6,6 +7,8 @@ import { timeToStamp } from '../../../../../utils/time';
 const GamePlayView = () => {
   const game = useGame();
   const { user } = useUser();
+
+  const [showPoints, setShowPoints] = useState(false);
 
   return (
     <div className="w-full h-full overflow-y-auto">
@@ -42,23 +45,39 @@ const GamePlayView = () => {
         </div>
         <div>
           You have only 3 lives. So make sure you don't click the buy button before or after{' '}
-          <span className="text-tapgate-green-300 font-bold">{game.mode?.speed} ms</span>.
+          <span className="text-tapgate-green-300 font-bold">{game.mode?.speed} ms</span>
+          {!showPoints && (
+            <>
+              ...{' '}
+              <span className="text-tapgate-blue-700" onClick={() => setShowPoints(true)}>
+                more
+              </span>
+            </>
+          )}
         </div>
 
-        <div className="mt-2">
-          <div className="flex justify-between mb-1">
-            <div>Speed</div>
-            <div>Point (s)</div>
-          </div>
-          {game.pointsArray?.map((pointsArray) => {
-            return (
-              <div key={pointsArray.join('-')} className="flex justify-between">
-                <div>{pointsArray[0]} ms</div>
-                <div>{pointsArray[1]}</div>
+        {showPoints && (
+          <div className="mt-2">
+            <div className="flex justify-between mb-1">
+              <div>Speed</div>
+              <div>Point (s)</div>
+            </div>
+            {game.pointsArray?.map((pointsArray) => {
+              return (
+                <div key={pointsArray.join('-')} className="flex justify-between">
+                  <div>{pointsArray[0]} ms</div>
+                  <div>{pointsArray[1]}</div>
+                </div>
+              );
+            })}
+            <div className="flex justify-between items-center">
+              ....
+              <div className="text-tapgate-blue-700" onClick={() => setShowPoints(false)}>
+                less
               </div>
-            );
-          })}
-        </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="w-full h-[150px] grid grid-rows-2 gap-y-4 p-4">
