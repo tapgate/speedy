@@ -1,14 +1,11 @@
-import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import UserProvider from './context/user';
+import { BrowserRouter } from 'react-router-dom';
 import WebRoutes from './pages/web/routes';
 import ServerRoutes from './pages/server/routes';
 
 function App() {
   switch (process.env.REACT_APP_CLIENT) {
-    case "web":
+    case 'web':
       return (
         <div className="App w-screen h-screen bg-tapgate-gray-600 text-tapgate-gray-100 select-none">
           {/* {
@@ -23,7 +20,7 @@ function App() {
           </BrowserRouter>
         </div>
       );
-    case "server":
+    case 'server':
       return (
         <div className="App w-screen h-screen bg-tapgate-gray-600 text-tapgate-gray-100 select-none">
           {/* {
