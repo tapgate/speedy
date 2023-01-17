@@ -9,7 +9,7 @@ export interface MainTemplateProps {
 }
 
 function MainTemplate({ children }: MainTemplateProps) {
-  const { showMenu } = useNavigator();
+  const { showMenu, toggleMenu } = useNavigator();
   const { user } = useUser();
 
   return (
@@ -29,14 +29,17 @@ function MainTemplate({ children }: MainTemplateProps) {
 
         {user && (
           <div
-            className={`absolute inset-0 z-10 ease-in duration-300 ${
+            className={`absolute inset-0 z-10 ease-in duration-300 flex justify-end items-center ${
               showMenu ? 'bg-tapgate-black/50 backdrop-blur' : 'pointer-events-none'
             }`}>
             <div
-              className={`w-full h-full flex justify-end items-center animate__animated animate__fast ${
+              className={`absolute inset-0 ${showMenu ? 'cursor-pointer' : ''}`}
+              onClick={() => toggleMenu()}></div>
+            <div
+              className={`w-1/2 h-full animate__animated animate__fast ${
                 showMenu ? 'animate__slideInRight' : 'animate__slideOutRight'
               }`}>
-              <div className="w-1/2 max-w-[250px] h-full">
+              <div className="w-full max-w-[250px] h-full">
                 <Menu />
               </div>
             </div>
