@@ -24,7 +24,6 @@ const Character: React.FC<CharacterProps> = ({
 }) => {
   if (!type) type = 'character';
   if (!skin) skin = 'yellow';
-  if (!outfit) outfit = 'emojii-panda';
 
   return (
     <div
