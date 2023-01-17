@@ -11,9 +11,9 @@ const LoginPage = () => {
     <div className="flex justify-center items-center h-full">
       <div className="flex flex-wrap gap-y-8 justify-center items-center w-3/4  md:w-1/3">
         <div className="w-full h-1/3 px-4 flex justify-center items-center">
-          <img src="/text-logo.svg" alt="Tapgate Logo" />
+          <img src="/images/text-logo.svg" alt="Tapgate Logo" />
         </div>
-        <div className="w-full max-w-[450px] bg-tapgate-white rounded-lg shadow p-6">
+        <div className="w-full max-w-[450px] bg-tapgate-white text-tapgate-black rounded-lg shadow p-6">
           <div className="w-full h-full flex flex-wrap">
             <div className="w-full h-[25%] flex justify-center items-center">
               <div className="flex flex-wrap justify-center gap-y-4">
@@ -32,7 +32,7 @@ const LoginPage = () => {
                       <span className="bg-tapgate-white px-1">Username</span>
                     </label>
                     <input
-                      className="w-full text-sm input input-bordered focus:outline-0"
+                      className="w-full text-sm input bg-tapgate-white input-bordered focus:outline-0"
                       type="text"
                       name="username"
                       onChange={(e) => setUsername(e.target.value)}
@@ -44,7 +44,7 @@ const LoginPage = () => {
                       <span className="bg-tapgate-white px-1">Password</span>
                     </label>
                     <input
-                      className="w-full text-sm input input-bordered focus:outline-0"
+                      className="w-full text-sm input bg-tapgate-white input-bordered focus:outline-0"
                       type="password"
                       name="password"
                       onChange={(e) => setPassword(e.target.value)}
