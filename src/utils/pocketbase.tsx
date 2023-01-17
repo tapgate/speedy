@@ -54,7 +54,9 @@ class PocketbaseSingleton {
             } else {
               try {
                 console.log('refresh admin pocketbase token');
-                this.adminAuth = await this.pocketbase.admins.authRefresh({ $autoCancel: false });
+                this.adminAuth = await this.pocketbase.admins.authRefresh({
+                  $autoCancel: false
+                });
                 console.log({ adminAuth: this.adminAuth });
               } catch (error) {
                 await this.loginAdmin();

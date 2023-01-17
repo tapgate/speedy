@@ -17,6 +17,22 @@ root.render(
       <div className="bg-tapgate-gray text-tapgate-gray"></div>
       <div className="bg-tapgate-black text-tapgate-black"></div>
       <div className="bg-tapgate-white text-tapgate-white"></div>
+
+      <div className="bg-tapgate-red/75 text-tapgate-red/75"></div>
+      <div className="bg-tapgate-green/75 text-tapgate-green/75"></div>
+      <div className="bg-tapgate-blue/75 text-tapgate-blue/75"></div>
+      <div className="bg-tapgate-yellow/75 text-tapgate-yellow/75"></div>
+      <div className="bg-tapgate-gray/75 text-tapgate-gray/75"></div>
+      <div className="bg-tapgate-black/75 text-tapgate-black/75"></div>
+      <div className="bg-tapgate-white/75 text-tapgate-white/75"></div>
+
+      <div className="bg-tapgate-red/50 text-tapgate-red/50"></div>
+      <div className="bg-tapgate-green/50 text-tapgate-green/50"></div>
+      <div className="bg-tapgate-blue/50 text-tapgate-blue/50"></div>
+      <div className="bg-tapgate-yellow/50 text-tapgate-yellow/50"></div>
+      <div className="bg-tapgate-gray/50 text-tapgate-gray/50"></div>
+      <div className="bg-tapgate-black/50 text-tapgate-black/50"></div>
+      <div className="bg-tapgate-white/50 text-tapgate-white/50"></div>
     </div>
     <App />
     <ToastContainer />

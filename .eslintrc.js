@@ -31,6 +31,14 @@ module.exports = {
     "unused-imports/no-unused-vars": [
       "warn",
       { vars: "all", varsIgnorePattern: "^_", args: "after-used", argsIgnorePattern: "^_" }
+    ],
+    "react/no-unknown-property": [
+      2,
+      {
+        "ignore": [
+          "jsx"
+        ]
+      }
     ]
   },
   settings: {

@@ -1,3 +1,130 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::-webkit-scrollbar {
+    display: none;
+  }
+
+:root {
+    --pixel-size: 4;
+    --grid-cell-size: calc(48px * var(--pixel-size));
+  }
+  
+  .pixel-art {
+    image-rendering: pixelated;
+  }
+  
+  .map {
+    background-size: 100%;
+    width: calc(20 * var(--grid-cell-size));
+    height: calc(20 * var(--grid-cell-size));
+    position: relative;
+  }
+  
+  .character {
+    overflow: hidden;
+  }
+  
+  .character > .outline-hover {
+    opacity: 0;
+  }
+  
+  .character.is-focused > .outline-hover {
+    opacity: 1;
+  }
+  
+  .character, .character .sheet {
+    background-size: contain;
+  }
+  
+  .character > .sheet {
+    background-repeat: no-repeat;
+  }
+  
+  .character.move-down > .sheet {
+    animation: moveSheetDown .6s steps(4) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  .character.idle-down > .sheet {
+    animation: moveSheetDown .6s steps(1) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  .character.move-right > .sheet {
+    animation: moveSheetRight .6s steps(4) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  .character.idle-right > .sheet {
+    animation: moveSheetRight .6s steps(1) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  .character.move-up > .sheet {
+    animation: moveSheetUp .6s steps(4) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  .character.idle-up > .sheet {
+    animation: moveSheetUp .6s steps(1) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  
+  .character.move-left > .sheet {
+    animation: moveSheetLeft .6s steps(4) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  .character.idle-left > .sheet {
+    animation: moveSheetLeft .6s steps(1) infinite;
+    background-repeat: no-repeat;
+  }
+  
+  
+  @keyframes moveSheetDown {
+    from {
+      transform: translate3d(0px, 0, 0);
+    }
+  
+    to {
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+  
+  @keyframes moveSheetRight {
+    from {
+      transform: translate3d(0px, calc(-64px * var(--pixel-size)), 0);
+    }
+  
+    to {
+      transform: translate3d(-100%, calc(-64px * var(--pixel-size)), 0);
+    }
+  }
+  
+  @keyframes moveSheetUp {
+    from {
+      transform: translate3d(0px, calc(-128px * var(--pixel-size)), 0);
+    }
+  
+    to {
+      transform: translate3d(-100%, calc(-128px * var(--pixel-size)), 0);
+    }
+  }
+  
+  @keyframes moveSheetLeft {
+    from {
+      transform: translate3d(0px, calc(-192px * var(--pixel-size)), 0);
+    }
+  
+    to {
+      transform: translate3d(-100%, calc(-192px * var(--pixel-size)), 0);
+    }
+  }
+
+  html {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }

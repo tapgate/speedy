@@ -86,7 +86,7 @@ const UserProvider = ({ children }: any) => {
       localStorage.setItem('token', token);
       setLoading(false);
     } else if (!firstLoad) {
-      if (!matchPath(location.pathname, '/login')) {
+      if (!matchPath(location.pathname, '/login') && !matchPath(location.pathname, '/register')) {
         navigate('/login');
       }
     } else {
@@ -102,13 +102,19 @@ const UserProvider = ({ children }: any) => {
 
       setToken(res.token);
 
-      toast('Logged in successfully', { type: 'success', position: 'top-center' });
+      toast('Logged in successfully', {
+        type: 'success',
+        position: 'top-center'
+      });
 
       // redirect to home page
       navigate('/');
     } catch (err: any) {
       console.log({ login: { err } });
-      toast('Invalid username or password', { type: 'error', position: 'top-center' });
+      toast('Invalid username or password', {
+        type: 'error',
+        position: 'top-center'
+      });
     }
     setLoading(false);
   };
@@ -131,13 +137,19 @@ const UserProvider = ({ children }: any) => {
         name: username
       });
 
-      toast('Registered in successfully', { type: 'success', position: 'top-center' });
+      toast('Registered in successfully', {
+        type: 'success',
+        position: 'top-center'
+      });
 
       // redirect to home page
       navigate('/login');
     } catch (err: any) {
       console.log({ register: { err } });
-      toast('Unable to create account', { type: 'error', position: 'top-center' });
+      toast('Unable to create account', {
+        type: 'error',
+        position: 'top-center'
+      });
     }
     setLoading(false);
   };
@@ -146,11 +158,17 @@ const UserProvider = ({ children }: any) => {
     setLoading(true);
     try {
       await pocketbase.authStore.clear();
-      toast('Logged out successfully', { type: 'success', position: 'top-center' });
+      toast('Logged out successfully', {
+        type: 'success',
+        position: 'top-center'
+      });
       navigate('/');
     } catch (err: any) {
       console.log({ logout: { err } });
-      toast('Error logging out', { type: 'error', position: 'top-center' });
+      toast('Error logging out', {
+        type: 'error',
+        position: 'top-center'
+      });
     }
     setLoading(false);
   };
