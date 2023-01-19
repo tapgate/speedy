@@ -10,6 +10,7 @@ import GamePlay from './pages/game/play';
 import GameLobby from './pages/game/lobby';
 import HomePage from './pages/home';
 import MainTemplateContainer from '../../templates/main';
+import CollectionPage from './pages/collection';
 
 function WebRoutes() {
   return (
@@ -22,6 +23,7 @@ function WebRoutes() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/game" element={<GameLobby />} />
             <Route path="/game/play" element={<GamePlay />} />
+            <Route path="/collection" element={<CollectionPage />} />
           </Routes>
         </GameProvider>
       </MainTemplateContainer>
