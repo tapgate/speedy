@@ -43,6 +43,11 @@ function Menu() {
       link: '/shop'
     },
     {
+      name: 'Collection',
+      icon: 'collection',
+      link: '/collection'
+    },
+    {
       name: 'Games',
       icon: 'games',
       link: '/game'
