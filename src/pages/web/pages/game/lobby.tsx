@@ -69,7 +69,7 @@ const GameLobby = () => {
   };
 
   return (
-    <MobileView>
+    <MobileView title="Game Lobby">
       <div className="w-full h-full overflow-auto flex flex-wrap gap-y-4 justify-center items-center p-6">
         <div className="w-full">
           {/* Start Logo Area */}

@@ -22,6 +22,19 @@
     position: relative;
   }
   
+  .item {
+    overflow: hidden;
+  }
+
+  .item, .item .sheet {
+    background-size: contain;
+  }
+  
+  .item > .sheet {
+    background-repeat: no-repeat;
+    transform: translate3d(0px, 0, 0);
+  }
+  
   .character {
     overflow: hidden;
   }

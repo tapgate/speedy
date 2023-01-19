@@ -43,7 +43,7 @@ const GamePlay = () => {
   }, []);
 
   return (
-    <MobileView>
+    <MobileView title={`Game Play ${game.data.level}`}>
       <div className="w-full h-full pb-[80px] overflow-auto">
         <div className="w-full h-[300px] bg-tapgate-black">
           <div className="w-full h-full flex justify-center items-center">

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Page from '../../../components/page';
 import { useUser } from '../../../context/user';
 
 const HomePage = () => {
@@ -17,7 +18,11 @@ const HomePage = () => {
   }, [user]);
 
   // create loading spinner svg
-  return <div className="w-full h-full flex justify-center items-center">Loading...</div>;
+  return (
+    <Page title={`Home`}>
+      <div className="w-full h-full flex justify-center items-center">Loading...</div>
+    </Page>
+  );
 };
 
 export default HomePage;
