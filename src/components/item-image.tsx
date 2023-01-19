@@ -29,8 +29,11 @@ function ItemImage(props: IItemImageProps) {
           case 'truck':
             setImagePath(`trucks/${props.item.code}.png`);
             break;
-          case 'minereal':
-            setImagePath(`minereals/${props.item.code}.png`);
+          case 'track':
+            setImagePath(`track/${props.item.code}.png`);
+            break;
+          case 'mineral':
+            setImagePath(`mineral/${props.item.code}.png`);
             break;
         }
       }
@@ -44,14 +47,28 @@ function ItemImage(props: IItemImageProps) {
       case 'outfit':
         return (
           <div className="relative w-full h-full overflow-hidden flex justify-center items-center">
-            <div className="character-container absolute top-[-50px] w-full h-full">
-              <div
-                className={`character idle-down`}
-                style={{ ...CSSDimensionsWithPixelSize('32px', '64px') }}>
+            <div className="item-container absolute top-[-50px] w-full h-full">
+              <div className={`item`} style={{ ...CSSDimensionsWithPixelSize('32px', '64px') }}>
                 <div
-                  className={`character-outfit pixel-art sheet absolute`}
+                  className={`sheet pixel-art absolute`}
                   style={{
                     ...CSSDimensionsWithPixelSize('128px', '256px'),
+                    backgroundImage: `url(/images/${imagePath})`
+                  }}></div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'track':
+      case 'mineral':
+        return (
+          <div className="relative w-full h-full overflow-hidden flex justify-center items-center">
+            <div className="item-container absolute top-0 w-full h-full">
+              <div className={`item w-full h-full flex justify-center items-center`}>
+                <div
+                  className={`sheet pixel-art`}
+                  style={{
+                    ...CSSDimensionsWithPixelSize('25px', '25px'),
                     backgroundImage: `url(/images/${imagePath})`
                   }}></div>
               </div>
