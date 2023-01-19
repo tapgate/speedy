@@ -70,7 +70,7 @@ const GameLobby = () => {
 
   return (
     <MobileView>
-      <div className="w-full h-full flex flex-wrap gap-y-4 justify-center items-center p-6">
+      <div className="w-full h-full overflow-auto flex flex-wrap gap-y-4 justify-center items-center p-6">
         <div className="w-full">
           {/* Start Logo Area */}
           <div className="w-full h-[150px] flex flex-wrap items-center justify-center">
@@ -90,7 +90,7 @@ const GameLobby = () => {
             {/* Start Button Area */}
             {modes.map((mode, index) => {
               return (
-                <div key={index} className="w-full h-[150px] flex">
+                <div key={index} className="w-full h-[10vh] max-h-[125px] flex">
                   <div
                     onClick={() => selectMode(mode)}
                     className="w-full h-full cursor-pointer bg-gradient-to-r from-tapgate-gray-600 via-tapgate-gray-500 to-tapgate-gray-600 backdrop-blur-lg border-4 active:opacity-75 active:scale-95 border-tapgate-gray-700/25 rounded-xl">
