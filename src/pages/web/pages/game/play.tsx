@@ -5,7 +5,7 @@ import MobileView from '../../../../components/mobile-view';
 import { GameView, useGame } from '../../../../context/game';
 import { useUser } from '../../../../context/user';
 import { IGameState, IGameEvent } from '../../../../utils/game';
-import { timeToStamp } from '../../../../utils/time';
+import { timeCollapse, timeToStamp } from '../../../../utils/time';
 
 const GamePlay = () => {
   const navigate = useNavigate();
@@ -183,7 +183,7 @@ const GamePlay = () => {
               <div className="w-full h-full flex justify-center items-center font-black bg-tapgate-black rounded-lg">
                 <div className="grid grid-rows-2">
                   <div className="flex justify-center items-center text-3xl tracking-widest">
-                    {String(averageTime ?? 0).padStart(4, '0')}
+                    {timeCollapse(averageTime ?? 0)}
                   </div>
                   <div className="flex justify-center items-center">AVG TIME</div>
                 </div>
@@ -193,7 +193,7 @@ const GamePlay = () => {
               <div className="w-full h-full flex justify-center items-center font-black bg-tapgate-black rounded-lg">
                 <div className="grid grid-rows-2">
                   <div className="flex justify-center items-center text-3xl tracking-widest">
-                    {String(bestTime ?? 0).padStart(4, '0')}
+                    {timeCollapse(bestTime ?? 0)}
                   </div>
                   <div className="flex justify-center items-center">BST TIME</div>
                 </div>
