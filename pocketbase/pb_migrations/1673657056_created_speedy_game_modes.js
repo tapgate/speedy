@@ -3,7 +3,7 @@ migrate((db) => {
     "id": "xq0r5zigwvlrweo",
     "created": "2023-01-14 00:44:16.632Z",
     "updated": "2023-01-14 00:44:16.632Z",
-    "name": "speedy_game_modes",
+    "name": "game_levels",
     "type": "base",
     "system": false,
     "schema": [

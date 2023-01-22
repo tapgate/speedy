@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Icons } from '../../../../components/icons';
-import MobileView from '../../../../components/mobile-view';
-import { GameView, useGame } from '../../../../context/game';
-import { useUser } from '../../../../context/user';
-import { IGameState, IGameEvent } from '../../../../utils/game';
-import { timeCollapse, timeToStamp } from '../../../../utils/time';
+import { Icons } from '../../../../../components/icons';
+import MobileView from '../../../../../components/mobile-view';
+import { useGame } from '../../../../../context/game';
+import { useUser } from '../../../../../context/user';
+import { GameStateEnum, GameEventEnum } from '../../../../../utils/game';
+import { timeCollapse, timeToStamp } from '../../../../../utils/time';
 
-const GamePlay = () => {
+const ClassicGame = () => {
   const navigate = useNavigate();
 
   const game = useGame();
@@ -35,15 +35,13 @@ const GamePlay = () => {
   const [showPoints, setShowPoints] = useState(false);
 
   useEffect(() => {
-    game.setView(GameView.PLAY);
-
     if (!level) {
-      navigate('/game');
+      navigate(`/games/${game.mode}/levels`);
     }
   }, []);
 
   return (
-    <MobileView title={`Game Play ${game.data.level}`}>
+    <MobileView title={`Game Play ${game.data.level.name}`}>
       <div className="w-full h-full pb-[80px] overflow-auto">
         <div className="w-full h-[300px] bg-tapgate-black">
           <div className="w-full h-full flex justify-center items-center">
@@ -57,7 +55,7 @@ const GamePlay = () => {
                 </div>
               </div>
               <div className="w-full h-1/3 flex justify-between items-end">
-                <div className={`font-black text-2xl uppercase`}>{level}</div>
+                <div className={`font-black text-2xl uppercase`}>{level.name}</div>
                 <div className={`font-black text-2xl uppercase`}>MODE</div>
               </div>
             </div>
@@ -137,7 +135,7 @@ const GamePlay = () => {
         <div className="w-full h-[150px] grid grid-rows-2 gap-y-4 p-4">
           <div
             className="flex justify-between items-center bg-tapgate-black rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
-            onClick={() => trigger(IGameEvent.Hit)}>
+            onClick={() => trigger(GameEventEnum.Hit)}>
             <div className="h-full flex items-center gap-x-2 p-2 px-4">
               <span className="text-tapgate-blue-600">{Icons.ClockSolid}</span>
               {clockedTime ?? 0 > 0 ? `${clockedTime} ms` : '---'}
@@ -145,11 +143,11 @@ const GamePlay = () => {
             <div className="h-full border-l-2 border-tapgate-gray-700">
               <div className="h-full flex justify-between items-center p-2 px-4">
                 <span className="text-tapgate-blue">{Icons.FingerPrint}</span>
-                {state == IGameState.Waiting && <div className="ml-2">Tap Now</div>}
-                {state == IGameState.CountDown && (
+                {state == GameStateEnum.Waiting && <div className="ml-2">Tap Now</div>}
+                {state == GameStateEnum.CountDown && (
                   <div className="ml-2">Tap in {timeToStamp((timeLeft ?? 0) * 1000)}</div>
                 )}
-                {state == IGameState.GameOver && <div className="ml-2">Restart</div>}
+                {state == GameStateEnum.GameOver && <div className="ml-2">Restart</div>}
               </div>
             </div>
           </div>
@@ -219,4 +217,4 @@ const GamePlay = () => {
   );
 };
 
-export default GamePlay;
+export default ClassicGame;

@@ -36,7 +36,7 @@ const CollectionProvider = ({ children }: any) => {
 
     getItems();
 
-    // subscribe to speey game modes realtime updates
+    // subscribe to speey game levels realtime updates
     pocketbase.collection('user_items').subscribe('*', (data) => {
       const record = data.record as unknown as IUserItem;
 

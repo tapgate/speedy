@@ -50,7 +50,7 @@ function Menu() {
     {
       name: 'Games',
       icon: 'games',
-      link: '/game'
+      link: '/games'
     },
     {
       name: 'Settings',
