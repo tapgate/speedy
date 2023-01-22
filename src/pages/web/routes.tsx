@@ -1,16 +1,19 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
+import GameProvider from '../../context/game';
 import UserProvider from '../../context/user';
 
+import MainTemplateContainer from '../../templates/main';
+
+import HomePage from './pages/home';
 import LoginPage from './pages/login';
 import RegisterPage from './pages/register';
-import GameProvider from '../../context/game';
-import GamePlay from './pages/game/play';
-import GameLobby from './pages/game/lobby';
-import HomePage from './pages/home';
-import MainTemplateContainer from '../../templates/main';
 import CollectionPage from './pages/collection';
+
+import GamePlayPage from './pages/games/play';
+import GameLobbyPage from './pages/games/lobby';
+import GameLevelSelectPage from './pages/games/levels';
 
 function WebRoutes() {
   return (
@@ -21,9 +24,11 @@ function WebRoutes() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/game" element={<GameLobby />} />
-            <Route path="/game/play" element={<GamePlay />} />
             <Route path="/collection" element={<CollectionPage />} />
+
+            <Route path="/games" element={<GameLobbyPage />} />
+            <Route path="/games/:mode/levels" element={<GameLevelSelectPage />} />
+            <Route path="/games/:mode/play" element={<GamePlayPage />} />
           </Routes>
         </GameProvider>
       </MainTemplateContainer>

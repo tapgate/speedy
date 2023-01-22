@@ -1,4 +1,4 @@
-import { IGameMode } from '../models/game';
+import { IGameLevel } from '../models/game';
 import uuid from 'react-uuid';
 
 export const speedToPointsArray = (speed: number): number[][] => {
@@ -32,21 +32,26 @@ export const clockSpeedPoint = (speed: number, maxSpeed: number): number => {
   return points ?? 0;
 };
 
-export enum IGameLevel {
+export enum GameModeEnum {
+  Arcade = 'arcade',
+  Classic = 'classic'
+}
+
+export enum GameLevelNameEnum {
   Easy = 'easy',
   Fast = 'fast',
   Pro = 'pro',
   hero = 'hero'
 }
 
-export enum IGameState {
+export enum GameStateEnum {
   Interim = 'interim',
   CountDown = 'countdown',
   Waiting = 'waiting',
   GameOver = 'gameover'
 }
 
-export enum IGameEvent {
+export enum GameEventEnum {
   Hit = 'hit',
   Stop = 'stop'
 }
@@ -68,14 +73,12 @@ export interface IGameData {
   timeLeft: number;
   timeWaiting: number;
   stopWaiting: boolean;
-  state: IGameState;
+  state: GameStateEnum;
   pointsArray: number[][];
 }
 
 export class Game {
   private _id!: string;
-
-  private _mode!: IGameMode;
 
   private _level!: IGameLevel;
   private _speed!: number;
@@ -99,23 +102,19 @@ export class Game {
   private _timeWaiting!: number;
   private _stopWaiting!: boolean;
 
-  private _state!: IGameState;
+  private _state!: GameStateEnum;
 
   private _pointsArray!: number[][];
 
   private _timeStamp!: number;
   private _timeDelta!: number;
 
-  constructor(mode: IGameMode) {
-    this.setMode(mode);
+  constructor(mode: IGameLevel) {
+    this.setLevel(mode);
   }
 
   public get state() {
     return this._state;
-  }
-
-  public get mode() {
-    return this._mode;
   }
 
   public get level() {
@@ -185,10 +184,9 @@ export class Game {
     };
   }
 
-  setMode(mode: IGameMode) {
+  setLevel(mode: IGameLevel) {
     this._id = uuid();
-    this._mode = mode;
-    this._level = mode.level as IGameLevel;
+    this._level = mode;
     this._speed = mode.speed;
     this._timerMin = Math.round(mode.timer * 0.1);
     this._timerMax = mode.timer;
@@ -196,7 +194,7 @@ export class Game {
 
     this.reset();
 
-    this._state = IGameState.Interim;
+    this._state = GameStateEnum.Interim;
   }
 
   resetTimer() {
@@ -220,7 +218,7 @@ export class Game {
     this._timeLeft = 0;
     this._timeWaiting = 0;
     this._stopWaiting = false;
-    this._state = IGameState.Interim;
+    this._state = GameStateEnum.Interim;
 
     this.resetTimer();
   }
@@ -233,7 +231,7 @@ export class Game {
       return;
     }
 
-    this._state = IGameState.Waiting;
+    this._state = GameStateEnum.Waiting;
   }
 
   async wait() {
@@ -248,7 +246,7 @@ export class Game {
   public async nextRound() {
     this._stopWaiting = false;
     this._timeWaiting = 0;
-    this._state = IGameState.CountDown;
+    this._state = GameStateEnum.CountDown;
     this.resetTimer();
 
     console.log('next round');
@@ -259,39 +257,39 @@ export class Game {
     this._timeStamp = Date.now();
 
     switch (this._state) {
-      case IGameState.Interim:
+      case GameStateEnum.Interim:
         this.nextRound();
         break;
-      case IGameState.CountDown:
+      case GameStateEnum.CountDown:
         this.countdown();
         break;
-      case IGameState.Waiting:
+      case GameStateEnum.Waiting:
         this.wait();
         break;
-      case IGameState.GameOver:
+      case GameStateEnum.GameOver:
         break;
     }
   }
 
-  public trigger(trigger: IGameEvent) {
+  public trigger(trigger: GameEventEnum) {
     if (!this.trigger) return;
 
     console.log('trigger', trigger);
 
     switch (trigger) {
-      case IGameEvent.Stop:
-        this._state = IGameState.GameOver;
+      case GameEventEnum.Stop:
+        this._state = GameStateEnum.GameOver;
         break;
-      case IGameEvent.Hit:
-        if (this._state === IGameState.GameOver) {
+      case GameEventEnum.Hit:
+        if (this._state === GameStateEnum.GameOver) {
           this.reset();
-          this._state = IGameState.Interim;
+          this._state = GameStateEnum.Interim;
           return;
         }
 
-        if (this._state === IGameState.Waiting) {
+        if (this._state === GameStateEnum.Waiting) {
           console.log('hit');
-          this._state = IGameState.Interim;
+          this._state = GameStateEnum.Interim;
 
           this._stopWaiting = true;
 
@@ -316,7 +314,7 @@ export class Game {
             this._lives--;
 
             if (this._lives === 0) {
-              this._state = IGameState.GameOver;
+              this._state = GameStateEnum.GameOver;
             }
           }
 
@@ -328,7 +326,7 @@ export class Game {
         this._lives--;
 
         if (this._lives === 0) {
-          this._state = IGameState.GameOver;
+          this._state = GameStateEnum.GameOver;
         }
 
         this.resetTimer();

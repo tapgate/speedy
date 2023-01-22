@@ -36,10 +36,10 @@ function MainTemplate({ children }: MainTemplateProps) {
               className={`absolute inset-0 ${showMenu ? 'cursor-pointer' : ''}`}
               onClick={() => toggleMenu()}></div>
             <div
-              className={`w-1/2 h-full animate__animated animate__fast ${
+              className={`w-1/2 max-w-[250px] h-full animate__animated animate__fast ${
                 showMenu ? 'animate__slideInRight' : 'animate__slideOutRight'
               }`}>
-              <div className="w-full max-w-[250px] h-full">
+              <div className="w-full h-full">
                 <Menu />
               </div>
             </div>
