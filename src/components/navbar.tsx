@@ -21,7 +21,7 @@ function Navbar() {
         </div>
 
         <div
-          className="w-8 h-8 flex items-center text-tapgate-white cursor-pointer hover:opacity-75"
+          className="w-8 h-8 flex items-center text-tapgate-white cursor-pointer hover:opacity-75 xl:hidden"
           onClick={() => toggleMenu()}>
           <div
             className={`ease-in duration-300 ${
