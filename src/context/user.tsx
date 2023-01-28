@@ -3,11 +3,13 @@ import { matchPath, useNavigate, useLocation } from 'react-router-dom';
 import pocketbase from '../utils/pocketbase';
 import { toast } from 'react-toastify';
 import { IUser } from '../models/user';
+import { IItem } from '../models/item';
 
 pocketbase.autoCancellation(false);
 
 interface UserContext {
   user: IUser | null;
+  outfit: IItem | null;
   token: string | null;
   login: (username: string, password: string) => Promise<void>;
   register: (
@@ -27,6 +29,7 @@ const UserProvider = ({ children }: any) => {
   const location = useLocation();
   const [loading, setLoading] = useState<boolean>(true);
   const [user, setUser] = useState<IUser | null>(null);
+  const [outfit, setOutfit] = useState<IItem | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [firstLoad, setFirstLoad] = useState<boolean>(true);
 
@@ -78,21 +81,55 @@ const UserProvider = ({ children }: any) => {
   }, []);
 
   useEffect(() => {
-    if (firstLoad) {
-      setFirstLoad(false);
-    }
-
-    if (user && token) {
-      localStorage.setItem('token', token);
-      setLoading(false);
-    } else if (!firstLoad) {
-      if (!matchPath(location.pathname, '/login') && !matchPath(location.pathname, '/register')) {
-        navigate('/login');
+    const run = async () => {
+      if (firstLoad) {
+        setFirstLoad(false);
       }
-    } else {
-      setLoading(true);
-    }
+
+      if (user && token) {
+        localStorage.setItem('token', token);
+        updateOutfit();
+        setLoading(false);
+      } else if (!firstLoad) {
+        if (!matchPath(location.pathname, '/login') && !matchPath(location.pathname, '/register')) {
+          navigate('/login');
+        }
+      } else {
+        setLoading(true);
+      }
+    };
+
+    run();
   }, [user, token, firstLoad, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      const userSubscription = pocketbase.collection('users').subscribe(user.id, function (e) {
+        const action = e.action;
+        switch (action) {
+          case 'update':
+            setUser(e.record as unknown as IUser);
+            break;
+          case 'delete':
+            setUser(null);
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  }, [user?.id]);
+
+  const updateOutfit = async () => {
+    if (user) {
+      if (user.outfit) {
+        const outfit = await pocketbase.collection('items').getOne(user.outfit);
+        setOutfit(outfit as unknown as IItem);
+      } else {
+        setOutfit(null);
+      }
+    }
+  };
 
   const login = async (username: string, password: string) => {
     setLoading(true);
@@ -175,6 +212,7 @@ const UserProvider = ({ children }: any) => {
 
   const exposed = {
     user,
+    outfit,
     token,
     login,
     register,

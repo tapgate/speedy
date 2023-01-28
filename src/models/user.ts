@@ -7,6 +7,7 @@ export interface IUser {
   created: string;
   email: string;
   emailVisibility: boolean;
+  outfit?: string;
   updated: string;
   username: string;
   verified: boolean;

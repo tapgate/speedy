@@ -4,7 +4,7 @@ import Character from './character';
 import { Icon } from './icons';
 
 function Menu() {
-  const { user, logout } = useUser();
+  const { user, outfit, logout } = useUser();
   const { navigate, toggleMenu } = useNavigator();
 
   if (!user) return null;
@@ -69,7 +69,7 @@ function Menu() {
       <div className="w-full h-full bg-tapgate-gray text-tapgate-white shadow-lg border-l border-tapgate-black">
         <div className="relative w-full h-[20%] overflow-hidden bg-tapgate-black-400 flex justify-center items-center p-4">
           <div className="character-container absolute z-10 overflow-hidden">
-            <Character />
+            <Character outfit={outfit?.code} />
           </div>
         </div>
         <div className="w-full h-[5%] flex justify-center items-center bg-tapgate-black font-black">

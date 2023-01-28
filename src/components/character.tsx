@@ -1,12 +1,19 @@
 import React from 'react';
 import { CSSDimensionsWithPixelSize } from '../utils/pixles';
 
+export enum CharacterFacingDirectionEnum {
+  UP = 'up',
+  DOWN = 'down',
+  LEFT = 'left',
+  RIGHT = 'right'
+}
+
 interface CharacterProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name?: string;
   type?: string;
   skin?: string;
   outfit?: string;
-  facingDirection?: string;
+  facingDirection?: CharacterFacingDirectionEnum;
   isMoving?: boolean;
   isFocused?: boolean;
   disableEffects?: boolean;

@@ -34,6 +34,23 @@
     background-repeat: no-repeat;
     transform: translate3d(0px, 0, 0);
   }
+
+  .character-container {
+    animation-duration: 2s;
+  }
+
+  .character-container .character .sheet {
+    transition: all .5s ease-in-out;
+  }
+
+  
+  .character-container.dead {
+    opacity: 50;
+  }
+
+  .character-container.dead .character .sheet {
+    filter: grayscale(100%);
+  }
   
   .character {
     overflow: hidden;

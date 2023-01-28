@@ -37,9 +37,10 @@ function MainTemplate({ children }: MainTemplateProps) {
           {user && (
             <>
               <div
-                className={`xl:hidden absolute inset-0 z-10 ease-in duration-300 flex justify-end items-center ${
+                className={`xl:hidden absolute inset-0 ease-in duration-300 flex justify-end items-center ${
                   showMenu ? 'bg-tapgate-black/50 backdrop-blur' : 'pointer-events-none'
-                }`}>
+                }`}
+                style={{ zIndex: '10000000' }}>
                 <div
                   className={`absolute inset-0 ${showMenu ? 'cursor-pointer' : ''}`}
                   onClick={() => toggleMenu()}></div>
