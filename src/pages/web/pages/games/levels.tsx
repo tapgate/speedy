@@ -18,7 +18,8 @@ const GameLevelSelectPage = () => {
   useEffect(() => {
     const getLevels = async () => {
       const data = await pocketbase.collection('game_levels').getFullList(100, {
-        sort: '+index'
+        sort: '+index',
+        filter: `mode = "${mode}"`
       });
 
       if (data) {

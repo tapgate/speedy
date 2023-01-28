@@ -31,9 +31,7 @@ function MainTemplate({ children }: MainTemplateProps) {
           <Menu />
         </div>
 
-        <main
-          className="relative w-full xl:w-[85%] overflow-hidden"
-          style={{ height: user ? 'calc(100% - 70px)' : '100%' }}>
+        <main className="relative w-full h-full xl:w-[85%] overflow-hidden">
           {content}
 
           {user && (

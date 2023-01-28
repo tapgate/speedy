@@ -7,3 +7,10 @@ export function CSSDimensionsWithPixelSize(
     height: `calc(${height} * var(--pixel-size))`
   };
 }
+
+export function CSSPositionPixelSize(left: string, top: string): { left: string; top: string } {
+  return {
+    left: `calc(${left} * var(--pixel-size))`,
+    top: `calc(${top} * var(--pixel-size))`
+  };
+}
