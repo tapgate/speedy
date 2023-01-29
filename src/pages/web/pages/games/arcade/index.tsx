@@ -21,13 +21,14 @@ interface ITile {
   x: number;
   y: number;
   hasObstacle?: boolean;
+  hasHealth?: boolean;
 }
 
 class ArcadeGameMode {
   public speed = 1;
-  public maxLives = 5;
-  public lives = 5;
-  public jumpHeight = 46;
+  public maxLives = 3;
+  public lives = 3;
+  public jumpHeight = 64;
   public jumpSpeed = 1.5;
   public feet = 0;
   public jumpCount = 0;
@@ -36,19 +37,24 @@ class ArcadeGameMode {
   public spawnTileCount = 5;
 
   public spawnObstacleSpeed = 1000;
+  public spawnHealthSpeed = 1000;
 
   public startingTileCount = 10;
   public maxTileCount = 20;
+  public maxHealthCount = 5;
 
   public mapLeftPadding = 150;
   public tileWidth = 16;
   public tileHeight = 150;
 
   public obstacleChance = 0.1;
+  public healthChance = 0.05;
 
   public game: IGameData | undefined;
 
   public obstaclesHit: { [key: string]: boolean } = {};
+
+  public healthHit: { [key: string]: boolean } = {};
 
   public jumpSfx = '/sounds/jump.mp3';
 
@@ -134,6 +140,7 @@ const ArcadeGame = () => {
   const lastTileIdRef = useRef<string>(lastTileId);
   const tileIdsRef = useRef<string[]>(tileIds);
   const timeTillNextObstacleSpawnRef = useRef<number>(Date.now() + gameMode.spawnObstacleSpeed);
+  const timeTillNextHealthSpawnRef = useRef<number>(Date.now() + gameMode.spawnHealthSpeed);
   const jumpAreaRef = useRef<HTMLDivElement>(null);
   const characterRef = useRef<HTMLDivElement>(null);
   const hitBoxRef = useRef<HTMLDivElement>(null);
@@ -155,6 +162,7 @@ const ArcadeGame = () => {
   useEffect(() => {
     lastTileIdRef.current = lastTileId;
     spawnObstacleIfPossible();
+    spawnHealthIfPossible();
   }, [lastTileId]);
 
   useEffect(() => {
@@ -214,6 +222,7 @@ const ArcadeGame = () => {
                 // check if tile touched character
                 const hitBox = hitBoxRef.current;
                 const obstacle = document.getElementById(tileId + '-obstacle');
+                const health = document.getElementById(tileId + '-health');
 
                 // add border to obstacle
                 // if (obstacle) {
@@ -237,6 +246,32 @@ const ArcadeGame = () => {
                       if (obstacle) {
                         setCrashed(true);
                         obstacle.classList.add('animate__animated', 'animate__rotateOutUpRight');
+                      }
+                    }
+                  }
+                }
+
+                if (hitBox && health) {
+                  if (!gameMode.healthHit[tileId]) {
+                    const hitBoxRect = hitBox.getBoundingClientRect();
+                    const healthRect = health.getBoundingClientRect();
+
+                    if (
+                      hitBoxRect.left < healthRect.right &&
+                      hitBoxRect.right > healthRect.left &&
+                      hitBoxRect.top < healthRect.bottom
+                    ) {
+                      gameMode.healthHit[tileId] = true;
+                      gameMode.lives++;
+                      gameMode.feet += 10;
+
+                      if (gameMode.lives > gameMode.maxLives) {
+                        gameMode.lives = gameMode.maxLives;
+                      }
+
+                      // explode obstacle
+                      if (health) {
+                        health.style.display = 'none';
                       }
                     }
                   }
@@ -373,6 +408,39 @@ const ArcadeGame = () => {
     }
   };
 
+  const spawnHealthIfPossible = () => {
+    const canSpawnHealth = Date.now() > timeTillNextHealthSpawnRef.current;
+
+    if (canSpawnHealth) {
+      const lastTile = tiles.get(lastTileId);
+
+      if (lastTile && lastTile.hasHealth) return;
+
+      const random = Math.random();
+
+      const spawn = random < gameMode.healthChance;
+
+      console.log('spawnHealthIfPossible', spawn);
+
+      if (spawn) {
+        console.log('spawnHealthIfPossible', true, lastTile);
+
+        if (lastTile) {
+          setTiles((prev) => {
+            const newTiles = new Map<string, ITile>(prev);
+            const newTile = { ...lastTile, hasHealth: true };
+            newTiles.set(lastTileId, newTile);
+            return newTiles;
+          });
+
+          timeTillNextHealthSpawnRef.current = Date.now() + gameMode.spawnHealthSpeed;
+        }
+
+        console.log('spawnHealthIfPossible', true, lastTile);
+      }
+    }
+  };
+
   const startGame = () => {
     if (loading) return;
 
@@ -504,6 +572,17 @@ const ArcadeGame = () => {
                     style={{ height: '46px' }}></div>
                 </div>
               )}
+
+              {tile.hasHealth && (
+                <div className="absolute inset-0 px-6" style={{ top: '-250px' }}>
+                  <div
+                    id={`${tile.id}-health`}
+                    className="w-full text-center"
+                    style={{ height: '25px', fontSize: '2em' }}>
+                    💯
+                  </div>
+                </div>
+              )}
               <div
                 className={`absolute inset-0 bg-yellow-300 border-t-4 border-yellow-600 ${
                   tile.id == firstTileId ? 'border-l-4' : ''
@@ -551,13 +630,13 @@ const ArcadeGame = () => {
           )}
         </div>
         <div
-          className="absolute z-20 inset-0 bottom-[50vh] flex justify-center items-center text-white font-black text-3xl"
+          className="absolute z-20 inset-0 bottom-[50vh] flex justify-center items-center text-white font-black text-5xl"
           onClick={() => tap()}>
           <div className="text-center">
-            <div className="tracking-widest">
+            <div className="tracking-widest mb-2">
               {padStart(`${Math.floor(gameMode.feet) ?? 0}`, 4, '0')}
             </div>
-            <div className="text-sm font-semibold">FEET</div>
+            <div className="text-sm font-semibold">SCORE</div>
           </div>
         </div>
         <div
