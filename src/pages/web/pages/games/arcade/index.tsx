@@ -640,7 +640,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
           crashed={crashed}
           started={gameMode.state == ArcadeGameStateEnum.PLAYING}
         />
-        <div className="absolute top-0 left-0 right-0 z-10 h-[60vh] bg-blue-300">
+        <div className="absolute top-0 left-0 right-0 z-10 h-[60%] bg-blue-300">
           <div className="absolute inset-0">
             {Array.from(mapObjects.values()).map((mapObject) => {
               if (mapObject.type == IMapObjectTypeEnum.CLOUD) {
@@ -742,11 +742,11 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
             )}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 z-10 h-[40vh] bg-green-500 border-t-4 border-green-800"></div>
-        <div className="absolute bottom-0 left-0 right-0 z-10 h-[25vh] bg-yellow-500 border-t-4 border-yellow-800"></div>
-        <div className="absolute bottom-0 left-0 right-0 z-10 h-[10vh] bg-blue-500/75 border-t-4 border-blue-800/75"></div>
+        <div className="absolute bottom-0 left-0 right-0 z-10 h-[40%] bg-green-500 border-t-4 border-green-800"></div>
+        <div className="absolute bottom-0 left-0 right-0 z-10 h-[25%] bg-yellow-500 border-t-4 border-yellow-800"></div>
+        <div className="absolute bottom-0 left-0 right-0 z-10 h-[10%] bg-blue-500/75 border-t-4 border-blue-800/75"></div>
         <div
-          className="absolute z-20 inset-0 bottom-[50vh] flex justify-center items-center text-white font-black text-5xl"
+          className="absolute z-20 inset-0 bottom-[50%] flex justify-center items-center text-white font-black text-5xl"
           onClick={() => tap()}>
           <div className="text-center">
             <div className="tracking-widest mb-2">
@@ -756,7 +756,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
           </div>
         </div>
         <div
-          className="absolute z-30 inset-0 bottom-[15vh] flex justify-center items-center text-white font-black text-xl"
+          className="absolute z-30 inset-0 bottom-[15%] flex justify-center items-center text-white font-black text-xl"
           onClick={() => tap()}>
           {gameMode.state !== ArcadeGameStateEnum.GAME_OVER ? (
             <div className="text-center">

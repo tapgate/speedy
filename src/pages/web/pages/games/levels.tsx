@@ -9,7 +9,11 @@ import { IGameLevel, IGameLevels } from '../../../../models/game';
 import UserTemplateContainer from '../../../../templates/user';
 import pocketbase from '../../../../utils/pocketbase';
 
-const GameLevelSelectPage = () => {
+export interface IGameGameLevelSelectPageProps {
+  goBack?: () => void;
+}
+
+export const GameLevelSelectPage = ({ goBack }: IGameGameLevelSelectPageProps) => {
   const navigate = useNavigate();
 
   const { mode, data, setLevel } = useGame();
@@ -58,15 +62,6 @@ const GameLevelSelectPage = () => {
     });
   }, []);
 
-  useEffect(() => {
-    console.log('data.level', data.level);
-    if (!mode || !data.level) {
-      navigate('/games');
-    } else {
-      navigate(`/games/${mode}/play`);
-    }
-  }, [mode, data.level]);
-
   const selectLevel = (level: IGameLevel) => {
     setLevel(level);
   };
@@ -77,7 +72,7 @@ const GameLevelSelectPage = () => {
     <MobileView title={pageTitle}>
       <WithPageHeader
         title={pageTitle}
-        icon={<Icon className="cursor-pointer" name="Back" onClick={() => navigate('/games')} />}>
+        icon={<Icon className="cursor-pointer" name="Back" onClick={() => goBack && goBack()} />}>
         <div className="w-full h-full overflow-auto flex flex-wrap gap-y-4 justify-center p-6">
           <div className="w-full">
             <div className="w-full flex flex-wrap justify-center gap-y-8">

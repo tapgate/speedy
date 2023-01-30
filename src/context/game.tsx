@@ -14,6 +14,7 @@ export enum GameViewEnum {
 
 interface GameContext {
   mode: GameModeEnum | undefined;
+  level: IGameLevel | undefined;
   data: IGameData;
 
   trigger: (event: GameEventEnum) => void;
@@ -132,6 +133,7 @@ const GameProvider = ({ children }: any) => {
 
   const exposed = {
     mode,
+    level,
     data,
 
     trigger,

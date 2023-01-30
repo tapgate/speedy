@@ -5,7 +5,7 @@ import ClassicGame from './classic';
 import ArcadeGame from './arcade';
 import UserTemplateContainer from '../../../../templates/user';
 
-const GamePlayPage = () => {
+export const GamePlayPage = () => {
   const { navigate } = useNavigator();
   const { mode } = useGame();
 

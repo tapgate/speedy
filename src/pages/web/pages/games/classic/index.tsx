@@ -3,13 +3,17 @@ import { Icons } from '../../../../../components/icons';
 import MobileView from '../../../../../components/mobile-view';
 import { useGame } from '../../../../../context/game';
 import { useUser } from '../../../../../context/user';
+import { IUser } from '../../../../../models/user';
 import { GameStateEnum, GameEventEnum } from '../../../../../utils/game';
 import { timeCollapse, timeToStamp } from '../../../../../utils/time';
 
-const ClassicGame = () => {
-  const game = useGame();
+export interface IClassicGamePageProps {
+  user: IUser;
+  quit?: () => void;
+}
 
-  const { user } = useUser();
+export const ClassicGame = ({ user, quit }: IClassicGamePageProps) => {
+  const game = useGame();
 
   const {
     trigger,
@@ -30,6 +34,8 @@ const ClassicGame = () => {
   } = game;
 
   const [showPoints, setShowPoints] = useState(false);
+
+  if (!game.data.level) return null;
 
   return (
     <MobileView title={`Game Play ${game.data.level.name}`}>
@@ -194,7 +200,7 @@ const ClassicGame = () => {
         <div className="absolute bottom-0 bg-tapgate-black w-full h-[83px] grid grid-cols-2 gap-x-4 p-4">
           <div
             className="w-full h-[51px] flex items-center justify-center bg-tapgate-red text-tapgate-white rounded-lg cursor-pointer hover:opacity-90 active:opacity-75 active:scale-95"
-            onClick={() => game.quitGame()}>
+            onClick={() => (quit ? quit() : game.quitGame())}>
             Quit
           </div>
           <div
@@ -208,4 +214,16 @@ const ClassicGame = () => {
   );
 };
 
-export default ClassicGame;
+const ClassicGameContainer = () => {
+  const { user, loading: userLoading } = useUser();
+
+  if (!user || userLoading) return null;
+
+  return (
+    <MobileView>
+      <ClassicGame user={user} />
+    </MobileView>
+  );
+};
+
+export default ClassicGameContainer;
