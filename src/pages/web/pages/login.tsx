@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Page from '../../../components/page';
 import { useUser } from '../../../context/user';
+import UserTemplateContainer from '../../../templates/user';
 
 const LoginPage = () => {
   const [username, setUsername] = useState<string>('');
@@ -78,4 +79,12 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+const LoginPageContainer = () => {
+  return (
+    <UserTemplateContainer>
+      <LoginPage />
+    </UserTemplateContainer>
+  );
+};
+
+export default LoginPageContainer;

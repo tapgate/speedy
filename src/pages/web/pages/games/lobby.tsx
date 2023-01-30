@@ -2,6 +2,7 @@ import MobileView from '../../../../components/mobile-view';
 import WithPageHeader from '../../../../components/with-page-header';
 import { useGame } from '../../../../context/game';
 import { useNavigator } from '../../../../context/navigation';
+import UserTemplateContainer from '../../../../templates/user';
 import { GameModeEnum } from '../../../../utils/game';
 
 const GamesLobbyPage = () => {
@@ -23,8 +24,10 @@ const GamesLobbyPage = () => {
   ];
 
   const selectMode = (id: GameModeEnum) => {
-    setMode(id);
-    navigate(`/games/${id}/levels`);
+    if (id) {
+      setMode(id);
+      navigate(`/games/${id}/levels`);
+    }
   };
 
   return (
@@ -72,4 +75,12 @@ const GamesLobbyPage = () => {
   );
 };
 
-export default GamesLobbyPage;
+const GamesLobbyPageContainer = () => {
+  return (
+    <UserTemplateContainer>
+      <GamesLobbyPage />
+    </UserTemplateContainer>
+  );
+};
+
+export default GamesLobbyPageContainer;

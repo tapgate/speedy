@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Page from '../../../components/page';
 import { useUser } from '../../../context/user';
+import UserTemplateContainer from '../../../templates/user';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState<string>('');
@@ -107,4 +108,12 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+const RegisterPageContainer = () => {
+  return (
+    <UserTemplateContainer>
+      <RegisterPage />
+    </UserTemplateContainer>
+  );
+};
+
+export default RegisterPageContainer;

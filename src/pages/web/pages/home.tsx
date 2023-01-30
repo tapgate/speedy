@@ -1,22 +1,7 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Page from '../../../components/page';
-import { useUser } from '../../../context/user';
+import UserTemplateContainer from '../../../templates/user';
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  const { user } = useUser();
-
-  useEffect(() => {
-    if (!user) {
-      // navigate to login page
-      navigate('/login');
-    } else {
-      // navigate to game lobby
-      navigate('/game');
-    }
-  }, [user]);
-
   // create loading spinner svg
   return (
     <Page title={`Home`}>
@@ -25,4 +10,12 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+const HomePageContainer = () => {
+  return (
+    <UserTemplateContainer>
+      <HomePage />
+    </UserTemplateContainer>
+  );
+};
+
+export default HomePageContainer;

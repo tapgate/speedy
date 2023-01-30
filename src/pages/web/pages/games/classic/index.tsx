@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Icons } from '../../../../../components/icons';
 import MobileView from '../../../../../components/mobile-view';
 import { useGame } from '../../../../../context/game';
@@ -8,8 +7,6 @@ import { GameStateEnum, GameEventEnum } from '../../../../../utils/game';
 import { timeCollapse, timeToStamp } from '../../../../../utils/time';
 
 const ClassicGame = () => {
-  const navigate = useNavigate();
-
   const game = useGame();
 
   const { user } = useUser();
@@ -33,12 +30,6 @@ const ClassicGame = () => {
   } = game;
 
   const [showPoints, setShowPoints] = useState(false);
-
-  useEffect(() => {
-    if (!level) {
-      navigate(`/games/${game.mode}/levels`);
-    }
-  }, []);
 
   return (
     <MobileView title={`Game Play ${game.data.level.name}`}>

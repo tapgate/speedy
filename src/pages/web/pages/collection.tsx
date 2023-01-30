@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ItemImage from '../../../components/item-image';
 import Page from '../../../components/page';
 import WithPageHeader from '../../../components/with-page-header';
 import CollectionProvider, { useCollection } from '../../../context/collection';
-import { useUser } from '../../../context/user';
+import UserTemplateContainer from '../../../templates/user';
 
 const CollectionPage = () => {
   const { items } = useCollection();
@@ -63,23 +62,14 @@ const CollectionPage = () => {
 };
 
 const CollectionPageContainer = () => {
-  const navigate = useNavigate();
-  const { user } = useUser();
-
-  useEffect(() => {
-    if (!user) {
-      // navigate to login page
-      navigate('/login');
-    }
-  }, [user]);
-
-  // create loading spinner svg
   return (
-    <CollectionProvider>
-      <Page title="Collection">
-        <CollectionPage />
-      </Page>
-    </CollectionProvider>
+    <UserTemplateContainer>
+      <CollectionProvider>
+        <Page title="Collection">
+          <CollectionPage />
+        </Page>
+      </CollectionProvider>
+    </UserTemplateContainer>
   );
 };
 

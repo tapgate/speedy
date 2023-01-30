@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router-dom';
 import 'animate.css';
 import './App.css';
 import WebRoutes from './pages/web/routes';
+import DemoRoutes from './pages/demo/routes';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           } */}
       <BrowserRouter>
         <WebRoutes />
+        <DemoRoutes />
       </BrowserRouter>
     </div>
   );

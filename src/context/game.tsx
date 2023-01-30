@@ -121,7 +121,9 @@ const GameProvider = ({ children }: any) => {
     stopGame();
     setLevel(undefined);
     setData({} as IGameData);
-    navigate(`/games/${mode}/levels`);
+    if (mode) {
+      navigate(`/games/${mode}/levels`);
+    }
   };
 
   const trigger = (event: GameEventEnum) => {

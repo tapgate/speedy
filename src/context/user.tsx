@@ -91,7 +91,11 @@ const UserProvider = ({ children }: any) => {
         updateOutfit();
         setLoading(false);
       } else if (!firstLoad) {
-        if (!matchPath(location.pathname, '/login') && !matchPath(location.pathname, '/register')) {
+        if (
+          !matchPath(location.pathname, '/demo') &&
+          !matchPath(location.pathname, '/login') &&
+          !matchPath(location.pathname, '/register')
+        ) {
           navigate('/login');
         }
       } else {

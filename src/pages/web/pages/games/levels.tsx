@@ -6,6 +6,7 @@ import MobileView from '../../../../components/mobile-view';
 import WithPageHeader from '../../../../components/with-page-header';
 import { useGame } from '../../../../context/game';
 import { IGameLevel, IGameLevels } from '../../../../models/game';
+import UserTemplateContainer from '../../../../templates/user';
 import pocketbase from '../../../../utils/pocketbase';
 
 const GameLevelSelectPage = () => {
@@ -59,10 +60,10 @@ const GameLevelSelectPage = () => {
 
   useEffect(() => {
     console.log('data.level', data.level);
-    if (mode && data.level) {
-      navigate(`/games/${mode}/play`);
-    } else if (!mode) {
+    if (!mode || !data.level) {
       navigate('/games');
+    } else {
+      navigate(`/games/${mode}/play`);
     }
   }, [mode, data.level]);
 
@@ -118,4 +119,12 @@ const GameLevelSelectPage = () => {
   );
 };
 
-export default GameLevelSelectPage;
+const GameLevelSelectPageContainer = () => {
+  return (
+    <UserTemplateContainer>
+      <GameLevelSelectPage />
+    </UserTemplateContainer>
+  );
+};
+
+export default GameLevelSelectPageContainer;

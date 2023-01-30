@@ -154,7 +154,30 @@
     }
   }
 
+  .scene:not(.playing) .map-object:not(.cloud) {
+    display: none;
+  }
+
+  .map-object {
+    animation: moveLeft 15s linear;
+  }
+
+  @keyframes moveLeft {
+    from {
+      left: 100%;
+    }
+  
+    to {
+      left: -100%;
+    }
+  }
+
+
   html {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+  }
+
+  .btn {
+    color: #fff;
   }

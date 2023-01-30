@@ -17,6 +17,8 @@ interface CharacterProps extends React.InputHTMLAttributes<HTMLInputElement> {
   isMoving?: boolean;
   isFocused?: boolean;
   disableEffects?: boolean;
+  width?: number;
+  height?: number;
 }
 
 const Character: React.FC<CharacterProps> = ({
@@ -27,7 +29,9 @@ const Character: React.FC<CharacterProps> = ({
   facingDirection,
   isMoving,
   isFocused,
-  disableEffects
+  disableEffects,
+  width,
+  height
 }) => {
   if (!type) type = 'character';
   if (!skin) skin = 'yellow';
@@ -37,7 +41,7 @@ const Character: React.FC<CharacterProps> = ({
       className={`character ${isFocused ? 'is-focused' : ''} ${
         isMoving ? 'bg-green-500x' : 'bg-red-500x'
       } ${isMoving ? 'move' : 'idle'}-${facingDirection}`}
-      style={{ ...CSSDimensionsWithPixelSize('32px', '64px') }}>
+      style={{ ...CSSDimensionsWithPixelSize(`${width ?? 32}px`, `${height ?? 64}px`) }}>
       {name && (
         <div className="absolute bottom-[75%] flex justify-center items-center w-full h-[50px] bg-white border-2 border-black rounded-md">
           <div>{name}</div>
