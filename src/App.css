@@ -82,6 +82,11 @@
     background-repeat: no-repeat;
   }
   
+  .character.jump-down > .sheet {
+    transform: translate3d(0, 0, 0);
+    background-repeat: no-repeat;
+  }
+
   .character.move-right > .sheet {
     animation: moveSheetRight .6s steps(4) infinite;
     background-repeat: no-repeat;
@@ -92,6 +97,11 @@
     background-repeat: no-repeat;
   }
   
+  .character.jump-right > .sheet {
+    transform: translate3d(calc(-32px * var(--pixel-size)), calc(-64px * var(--pixel-size)), 0);
+    background-repeat: no-repeat;
+  }
+
   .character.move-up > .sheet {
     animation: moveSheetUp .6s steps(4) infinite;
     background-repeat: no-repeat;
@@ -102,6 +112,11 @@
     background-repeat: no-repeat;
   }
   
+  .character.jump-up > .sheet {
+    transform: translate3d(0, 0, 0);
+    background-repeat: no-repeat;
+  }
+
   
   .character.move-left > .sheet {
     animation: moveSheetLeft .6s steps(4) infinite;
@@ -114,6 +129,12 @@
   }
   
   
+  .character.jump-left > .sheet {
+    transform: translate3d(0, 0, 0);
+    background-repeat: no-repeat;
+  }
+  
+
   @keyframes moveSheetDown {
     from {
       transform: translate3d(0px, 0, 0);
@@ -152,10 +173,6 @@
     to {
       transform: translate3d(-100%, calc(-192px * var(--pixel-size)), 0);
     }
-  }
-
-  .scene:not(.playing) .map-object:not(.cloud) {
-    display: none;
   }
 
   .map-object {

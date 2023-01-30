@@ -5,7 +5,7 @@ import DemoArcadeGame from './pages/games/arcade';
 function DemoRoutes() {
   return (
     <Routes>
-      <Route path="/games/arcade/demo" element={<DemoArcadeGame />} />
+      <Route path="/demo" element={<DemoArcadeGame />} />
     </Routes>
   );
 }

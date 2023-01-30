@@ -35,7 +35,8 @@ interface ITile {
 enum IMapObjectTypeEnum {
   CLOUD = 'cloud',
   OBSTACLE = 'obstacle',
-  HEALTH = 'health'
+  HEALTH = 'health',
+  POINT = 'point'
 }
 
 class MapObject {
@@ -46,6 +47,10 @@ class MapObject {
   public width = 0;
   public height = 0;
   public type!: IMapObjectTypeEnum;
+  public value: any;
+
+  public parentID?: string;
+  public children: MapObject[] = [];
 
   constructor(type: IMapObjectTypeEnum) {
     this.id = uuid();
@@ -62,10 +67,11 @@ class ArcadeGameMode {
   public state = ArcadeGameStateEnum.STARTING;
 
   public speed = 1;
+  public maxJumps = 2;
   public maxLives = 3;
   public lives = 3;
-  public jumpHeight = 64;
-  public jumpSpeed = 1.5;
+  public jumpHeight = 40;
+  public jumpSpeed = 1;
   public jumpHangTime = 0.5;
   public feet = 0;
   public jumpCount = 0;
@@ -93,7 +99,7 @@ class ArcadeGameMode {
 
   public audio: IArcadeAudio = {
     muted: false,
-    volume: 0.5
+    volume: 100
   };
 
   public objectsHit: { [key: string]: boolean } = {};
@@ -107,6 +113,9 @@ class ArcadeGameMode {
   public bgm = '/music/eric-skiff-underclocked-no-copyright-8-bit-music-background.mp3';
 
   public gameOverBgm = '/music/monplaisir-soundtrack-no-copyright-8-bit-music.mp3';
+
+  public defaultFloorPosition = { x: 0, y: 0 };
+  public currentFloorPosition = { x: 0, y: 0 };
 
   updateData(data?: IGameData) {
     let _data = data;
@@ -123,13 +132,29 @@ class ArcadeGameMode {
   }
 
   collideWithObject(object: MapObject): boolean {
+    if (object.parentID) {
+      if (this.objectsHit[object.parentID]) {
+        return false;
+      }
+    }
+
     if (!this.objectsHit[object.id]) {
       this.objectsHit[object.id] = true;
+
+      if (object.parentID) {
+        this.objectsHit[object.parentID] = true;
+      }
+
       if (object.type === IMapObjectTypeEnum.OBSTACLE) {
         this.takeLife();
       } else if (object.type === IMapObjectTypeEnum.HEALTH) {
-        this.feet += 100;
+        this.jumpCount--;
+        if (this.jumpCount < 0) {
+          this.jumpCount = 0;
+        }
         this.giveLife();
+      } else if (object.type === IMapObjectTypeEnum.POINT) {
+        this.feet += object.value;
       }
 
       return true;
@@ -167,12 +192,42 @@ class ArcadeGameMode {
     this.state = ArcadeGameStateEnum.PLAYING;
   }
 
+  togglePause() {
+    if (this.state !== ArcadeGameStateEnum.GAME_OVER) {
+      if (this.state === ArcadeGameStateEnum.PLAYING) {
+        this.state = ArcadeGameStateEnum.PAUSED;
+      } else {
+        this.state = ArcadeGameStateEnum.PLAYING;
+      }
+    }
+  }
+
   pause() {
-    this.state = ArcadeGameStateEnum.PAUSED;
+    if (this.state !== ArcadeGameStateEnum.GAME_OVER) {
+      this.state = ArcadeGameStateEnum.PAUSED;
+    }
   }
 
   resume() {
-    this.state = ArcadeGameStateEnum.PLAYING;
+    if (this.state !== ArcadeGameStateEnum.GAME_OVER) {
+      this.state = ArcadeGameStateEnum.PLAYING;
+    }
+  }
+
+  toggleMute() {
+    this.audio.muted = !this.audio.muted;
+  }
+
+  setVolume(volume: number) {
+    this.audio.volume = volume;
+  }
+
+  mute() {
+    this.audio.muted = true;
+  }
+
+  unmute() {
+    this.audio.muted = false;
   }
 }
 
@@ -188,17 +243,23 @@ const ArcadeGameSoundController = ({
   jumped,
   crashed
 }: IArcadeGameSoundControllerProps) => {
-  const [playJumpSfx] = useSound(gameMode.jumpSfx, { volume: 0.1, interrupt: true });
-  const [playCrashSfx] = useSound(gameMode.crashSfx, { volume: 0.1, interrupt: true });
+  const [playJumpSfx] = useSound(gameMode.jumpSfx, {
+    volume: (gameMode.audio.volume / 100) * 0.1,
+    interrupt: true
+  });
+  const [playCrashSfx] = useSound(gameMode.crashSfx, {
+    volume: (gameMode.audio.volume / 100) * 0.1,
+    interrupt: true
+  });
 
   useEffect(() => {
-    if (jumped) {
+    if (jumped && !gameMode.audio.muted) {
       playJumpSfx();
     }
   }, [jumped]);
 
   useEffect(() => {
-    if (crashed) {
+    if (crashed && !gameMode.audio.muted) {
       playCrashSfx();
     }
   }, [crashed]);
@@ -207,13 +268,12 @@ const ArcadeGameSoundController = ({
 };
 
 export interface IArcadeGameProps {
-  state?: ArcadeGameStateEnum;
   outfit?: IItem | null;
   data?: IGameData;
   quit?: () => void;
 }
 
-export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
+export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
   const [gameMode] = useState<ArcadeGameMode>(new ArcadeGameMode());
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -236,6 +296,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
   const timeTillNextHealthSpawnRef = useRef<number>(Date.now() + 1000 * gameMode.spawnHealthSpeed);
   const timeTillNextCloudSpawnRef = useRef<number>(Date.now() + 1000 * gameMode.spawnCloudSpeed);
   const jumpAreaRef = useRef<HTMLDivElement>(null);
+
   const characterRef = useRef<HTMLDivElement>(null);
   const hitBoxRef = useRef<HTMLDivElement>(null);
   const audioBGMRef = useRef<HTMLAudioElement>(null);
@@ -243,25 +304,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
   const mapObjectsRef = useRef<Map<string, MapObject>>(mapObjects);
 
-  useEffect(() => {
-    if (state) {
-      switch (state) {
-        case ArcadeGameStateEnum.STARTING:
-          gameMode.reset();
-          gameMode.start();
-          break;
-        case ArcadeGameStateEnum.PLAYING:
-          gameMode.start();
-          break;
-        case ArcadeGameStateEnum.PAUSED:
-          gameMode.pause();
-          break;
-        case ArcadeGameStateEnum.GAME_OVER:
-          gameMode.pause();
-          break;
-      }
-    }
-  }, [state]);
+  const jumpingFrameRef = useRef<number>(0);
 
   useEffect(() => {
     gameMode.updateData(data);
@@ -291,6 +334,15 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
   useEffect(() => {
     if (gameMode.lives <= 0) return;
+
+    // on spacebar press jump
+    const keyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        jump();
+      }
+    };
+
+    window.addEventListener('keydown', keyDown);
 
     // on window resize
     const resize = () => {
@@ -334,9 +386,40 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
       spawnCloudIfPossible();
 
+      if (gameMode.state !== ArcadeGameStateEnum.PLAYING) {
+        // get overlay element
+        const overlay = document.querySelector('.overlay') as HTMLElement;
+        overlay.classList.remove('animate__fadeOut');
+        overlay.classList.add('animate__fadeIn');
+      } else {
+        // get overlay element
+        const overlay = document.querySelector('.overlay') as HTMLElement;
+        overlay.classList.remove('animate__fadeIn');
+        overlay.classList.add('animate__fadeOut');
+      }
+
+      if ([ArcadeGameStateEnum.GAME_OVER, ArcadeGameStateEnum.PAUSED].includes(gameMode.state)) {
+        // get all animated-object elements
+        const animatedObjectElements = document.querySelectorAll('.animated-object:not(.cloud)');
+
+        // pause animation states
+        animatedObjectElements.forEach((element) => {
+          const el = element as HTMLElement;
+          el.style.animationPlayState = 'paused';
+        });
+      } else {
+        // get all animated-object elements
+        const animatedObjectElements = document.querySelectorAll('.animated-object:not(.cloud)');
+
+        // resume animation states
+        animatedObjectElements.forEach((element) => {
+          const el = element as HTMLElement;
+          el.style.animationPlayState = 'running';
+        });
+      }
+
       if (gameMode.state !== ArcadeGameStateEnum.GAME_OVER) {
         if (gameMode.state === ArcadeGameStateEnum.PLAYING) {
-          gameMode.feet += gameMode.speed * 1.5 * (timeDelta / 1000);
           spawnObstacleIfPossible();
           spawnHealthIfPossible();
         }
@@ -351,43 +434,77 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
         }
 
         mapObjects.forEach((mapObject) => {
-          const element = document.getElementById(mapObject.id);
+          const mapObjectElement = document.getElementById(mapObject.id);
+          const element = mapObjectElement as HTMLElement;
 
-          if (element) {
+          if (element && mapObject) {
             const elementRect = element.getBoundingClientRect();
 
             if (character && hitBox) {
               const hitBoxRect = hitBox.getBoundingClientRect();
 
-              if (
-                hitBoxRect.x + hitBoxRect.width > elementRect.x &&
-                hitBoxRect.x < elementRect.x + elementRect.width &&
-                hitBoxRect.y + hitBoxRect.height > elementRect.y &&
-                hitBoxRect.y < elementRect.y + elementRect.height
-              ) {
-                const collided = gameMode.collideWithObject(mapObject);
-
-                if (collided) {
-                  if (mapObject.type === IMapObjectTypeEnum.OBSTACLE) {
-                    setCrashed(true);
-                    element.style.left = `${elementRect.x + 50}px`;
-                    element.style.transition = 'all 0s';
-                    element.style.animationDuration = '0.3s';
-                    element.classList.remove('map-object');
-                    element.classList.add('animate__animated', 'animate__rotateOutUpRight');
-                    character.classList.add('animate__flash');
-                    character.style.animationDuration = '0.3s';
-                    timeCharacterWasDamanged = currentTime;
-                  } else if (mapObject.type === IMapObjectTypeEnum.HEALTH) {
-                    setCrashed(true);
-                    element.style.left = `${elementRect.x + 50}px`;
-                    element.style.transition = 'all 0s';
-                    element.style.animationDuration = '0.3s';
-                    element.classList.remove('map-object');
-                    element.classList.add('animate__animated', 'animate__fadeOutUp');
-                    character.classList.add('animate__flash');
+              switch (mapObject.type) {
+                case IMapObjectTypeEnum.OBSTACLE:
+                  // check if obstacle is in hitbox
+                  if (
+                    hitBoxRect.x + hitBoxRect.width > elementRect.x &&
+                    hitBoxRect.x < elementRect.x + elementRect.width &&
+                    hitBoxRect.y + hitBoxRect.height > elementRect.y &&
+                    hitBoxRect.y < elementRect.y + elementRect.height
+                  ) {
+                    const collided = gameMode.collideWithObject(mapObject);
+                    if (collided) {
+                      setCrashed(true);
+                      element.style.left = `${elementRect.x + 50}px`;
+                      element.style.transition = 'all 0s';
+                      element.style.animationDuration = '0.3s';
+                      element.classList.remove('map-object');
+                      element.classList.add('animate__animated', 'animate__rotateOutUpRight');
+                      character.classList.add('animate__flash');
+                      character.style.animationDuration = '0.3s';
+                      timeCharacterWasDamanged = currentTime;
+                    }
                   }
-                }
+                  break;
+                case IMapObjectTypeEnum.POINT:
+                  // check if obstacle is in hitbox
+                  if (
+                    hitBoxRect.x + hitBoxRect.width > elementRect.x &&
+                    hitBoxRect.x < elementRect.x + elementRect.width &&
+                    hitBoxRect.y + hitBoxRect.height > elementRect.y &&
+                    hitBoxRect.y < elementRect.y + elementRect.height
+                  ) {
+                    const collided = gameMode.collideWithObject(mapObject);
+                    if (collided) {
+                      setCrashed(true);
+                      element.style.left = `${elementRect.x + 50}px`;
+                      element.style.transition = 'all 0s';
+                      element.style.animationDuration = '0.3s';
+                      element.classList.remove('map-object');
+                      element.classList.add('animate__animated', 'animate__rotateOutUp');
+                    }
+                  }
+                  break;
+                case IMapObjectTypeEnum.HEALTH:
+                  if (
+                    hitBoxRect.x + hitBoxRect.width > elementRect.x &&
+                    hitBoxRect.x < elementRect.x + elementRect.width &&
+                    hitBoxRect.y + hitBoxRect.height > elementRect.y &&
+                    hitBoxRect.y < elementRect.y + elementRect.height
+                  ) {
+                    const collided = gameMode.collideWithObject(mapObject);
+
+                    if (collided) {
+                      setCrashed(true);
+                      element.style.left = `${elementRect.x - hitBoxRect.width / 2}px`;
+                      element.style.transition = 'all 0s';
+                      element.style.animationDuration = '0.3s';
+                      element.classList.remove('map-object');
+                      element.classList.add('animate__animated', 'animate__flipOutX');
+                      character.classList.add('animate__flash');
+                    }
+                  }
+                  break;
               }
             }
 
@@ -396,14 +513,6 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
             }
           }
         });
-      } else {
-        mapObjects.forEach((mapObject) => {
-          if (mapObject.type === IMapObjectTypeEnum.OBSTACLE) {
-            mapObjects.delete(mapObject.id);
-          }
-        });
-
-        setMapObjects(mapObjects);
       }
 
       if (bgmAudio) {
@@ -446,6 +555,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', resize);
+      window.removeEventListener('keydown', keyDown);
     };
   }, []);
 
@@ -464,13 +574,31 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
       if (spawn) {
         setMapObjects((prev) => {
           const newObjects = new Map<string, MapObject>(prev);
-          const newObject = new MapObject(IMapObjectTypeEnum.OBSTACLE);
-          newObject.x = 100;
-          newObject.width = 4;
-          newObject.height = 16;
+          const obstacle = new MapObject(IMapObjectTypeEnum.OBSTACLE);
+          obstacle.x = 100;
+          obstacle.width = 4;
+          obstacle.height = Math.floor(Math.random() * (16 - 4) + 4);
 
-          newObject.speed = gameMode.speed * 15;
-          newObjects.set(newObject.id, newObject);
+          obstacle.speed = gameMode.speed * 10;
+
+          obstacle.children = [0, 0, 0].map((_, i) => {
+            const point = new MapObject(IMapObjectTypeEnum.POINT);
+            point.parentID = obstacle.id;
+            point.x = 100;
+            point.width = obstacle.height * (i + 1 / 1) + 4;
+            point.height = 4;
+            point.speed = obstacle.speed * 15;
+            point.value = Math.floor(10 * (16 / obstacle.height) * (1 / (i + 1)));
+
+            newObjects.set(point.id, point);
+
+            return point;
+          });
+
+          newObjects.set(obstacle.id, obstacle);
+
+          console.log('newObjects', newObjects);
+
           return newObjects;
         });
 
@@ -548,11 +676,28 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
     setLoading(true);
     gameMode.start();
+
+    //  set default character position based on character ref
+    const character = characterRef.current;
+    if (character) {
+      gameMode.defaultFloorPosition.x = character.offsetLeft;
+      gameMode.defaultFloorPosition.y = character.offsetTop;
+    }
+
     setLoading(false);
   };
 
   const jump = () => {
-    if (isJumping) return;
+    const jumpingLimitReached = gameMode.jumpCount >= gameMode.maxJumps;
+
+    if (jumpingLimitReached) return;
+
+    if (jumpingFrameRef.current) {
+      cancelAnimationFrame(jumpingFrameRef.current);
+      setIsJumping(false);
+    }
+
+    gameMode.jumpCount++;
 
     setIsJumping(true);
 
@@ -566,7 +711,8 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
       const jumpSpeed = gameMode.jumpSpeed * 15 * pixleSize;
 
-      const currentTop = character.offsetTop;
+      const currentTop =
+        gameMode.jumpCount == 1 ? character.offsetTop : gameMode.currentFloorPosition.y;
 
       const jumpLimit = currentTop - gameMode.jumpHeight * pixleSize;
 
@@ -580,8 +726,13 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
         const characterTop = character.offsetTop;
 
         if (characterTop > jumpLimit) {
-          character.style.top = `${characterTop - jumpSpeed * (deltaTime / 100)}px`;
-          requestAnimationFrame(jump);
+          if (gameMode.state === ArcadeGameStateEnum.PLAYING) {
+            character.style.top = `${characterTop - jumpSpeed * (deltaTime / 100)}px`;
+          }
+
+          // set current floor position
+          gameMode.currentFloorPosition.y = character.offsetTop;
+          jumpingFrameRef.current = requestAnimationFrame(jump);
         } else {
           fall();
         }
@@ -594,12 +745,15 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
         const characterTop = character.offsetTop;
 
-        if (characterTop < currentTop) {
-          character.style.top = `${characterTop + jumpSpeed * (deltaTime / 100)}px`;
-          requestAnimationFrame(fall);
+        if (characterTop < gameMode.defaultFloorPosition.y) {
+          if (gameMode.state === ArcadeGameStateEnum.PLAYING) {
+            character.style.top = `${characterTop + jumpSpeed * (deltaTime / 100)}px`;
+          }
+          gameMode.currentFloorPosition.y = character.offsetTop;
+          jumpingFrameRef.current = requestAnimationFrame(fall);
         } else {
-          character.style.top = `${currentTop}px`;
-          gameMode.jumpCount++;
+          character.style.top = `${gameMode.defaultFloorPosition.y}px`;
+          gameMode.jumpCount = 0;
           setIsJumping(false);
         }
       };
@@ -631,7 +785,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
   return (
     <>
-      <div className={`scene ${gameMode.state} w-full h-full`} ref={sceneRef}>
+      <div className={`scene w-full h-full`} ref={sceneRef}>
         <audio ref={audioBGMRef} src={gameMode.bgm} loop muted></audio>
         <audio ref={audioGOMRef} src={gameMode.gameOverBgm} loop muted></audio>
         <ArcadeGameSoundController
@@ -649,7 +803,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
                     key={mapObject.id}
                     id={mapObject.id}
                     title={`speed-dampening: ${speedDampening}`}
-                    className="absolute map-object cloud bg-white border-b-8 rounded-lg opacity-75"
+                    className="absolute animated-object map-object cloud bg-white border-4 border-gray-500 border-b-8 rounded-lg opacity-75"
                     style={{
                       top: `${mapObject.y}%`,
                       left: `${mapObject.x}%`,
@@ -661,6 +815,8 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
                 );
               }
             })}
+
+            <div className="absolute inset-0 bg-cyan-500/25 backdrop-blur-sm"></div>
           </div>
           <div className="absolute inset-0">
             {Array.from(mapObjects.values()).map((mapObject) => {
@@ -668,15 +824,42 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
                 return (
                   <div
                     key={mapObject.id}
-                    id={mapObject.id}
                     title={`speed-dampening: ${speedDampening}`}
-                    className="absolute map-object obstacle bg-white border-b-8 rounded-t-lg opacity-75"
+                    className="absolute animated-object map-object flex items-end opacity-75"
                     style={{
                       bottom: '0',
                       left: `${mapObject.x}%`,
-                      animationDuration: `${mapObject.speed * (speedDampening * 1.5)}s`,
-                      ...CSSDimensionsWithPixelSize(`${mapObject.width}px`, `${mapObject.height}px`)
-                    }}></div>
+                      animationDuration: `${mapObject.speed * (speedDampening * 1.25)}s`
+                    }}>
+                    <div
+                      id={mapObject.id}
+                      className="map-object obstacle bg-white border-b-8 rounded-t-lg"
+                      style={{
+                        ...CSSDimensionsWithPixelSize(
+                          `${mapObject.width}px`,
+                          `${mapObject.height}px`
+                        )
+                      }}></div>
+                    {mapObject.children.map((child, i) => {
+                      return (
+                        <div
+                          key={child.id}
+                          id={child.id}
+                          className={` map-object bonus-points 1 ${
+                            ['bg-blue-500', 'bg-yellow-500', 'bg-red-500'][i]
+                          } mx-1 rounded-md`}
+                          style={{
+                            ...CSSDimensionsWithPixelSize(`${child.width}px`, `${child.height}px`)
+                          }}>
+                          <div className="relative w-full h-full">
+                            <div className="absolute bottom-[100%] w-full flex justify-center text-white text-xl">
+                              {child.value}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 );
               }
             })}
@@ -689,7 +872,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
                     key={mapObject.id}
                     id={mapObject.id}
                     title={`speed-dampening: ${speedDampening}`}
-                    className="absolute map-object health bg-red-100 border-4 border-red rounded-lg opacity-75"
+                    className="absolute animated-object map-object health bg-red-100 border-4 border-red rounded-lg opacity-75"
                     style={{
                       top: `${mapObject.y}%`,
                       animationDuration: `${mapObject.speed * (speedDampening * 2)}s`,
@@ -711,10 +894,10 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
                 gameMode.state == ArcadeGameStateEnum.GAME_OVER ? 'dead' : ''
               } absolute z-10 overflow-hidden`}
               ref={characterRef}>
-              <div className="absolute inset-0 flex justify-center items-center">
+              <div className="absolute inset-0 flex justify-center items-end">
                 <div
-                  className="hit-box"
-                  style={{ ...CSSDimensionsWithPixelSize('12px', '20px') }}
+                  className="hit-box border border-red-500"
+                  style={{ ...CSSDimensionsWithPixelSize('8px', '24px') }}
                   ref={hitBoxRef}></div>
               </div>
               <Character
@@ -722,11 +905,12 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
                 height={42}
                 outfit={outfit?.code}
                 facingDirection={
-                  gameMode.state == ArcadeGameStateEnum.PLAYING
+                  gameMode.state !== ArcadeGameStateEnum.GAME_OVER
                     ? CharacterFacingDirectionEnum.RIGHT
                     : CharacterFacingDirectionEnum.DOWN
                 }
-                isMoving={!isJumping && gameMode.state == ArcadeGameStateEnum.PLAYING}
+                isMoving={gameMode.state == ArcadeGameStateEnum.PLAYING}
+                isJumping={isJumping}
               />
             </div>
             {gameMode.state == ArcadeGameStateEnum.GAME_OVER && (
@@ -745,6 +929,10 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
         <div className="absolute bottom-0 left-0 right-0 z-10 h-[40%] bg-green-500 border-t-4 border-green-800"></div>
         <div className="absolute bottom-0 left-0 right-0 z-10 h-[25%] bg-yellow-500 border-t-4 border-yellow-800"></div>
         <div className="absolute bottom-0 left-0 right-0 z-10 h-[10%] bg-blue-500/75 border-t-4 border-blue-800/75"></div>
+
+        {/* overlay */}
+        <div className="absolute overlay animate__animated inset-0 z-10 bg-cyan-700/50 backdrop-blur-sm"></div>
+
         <div
           className="absolute z-20 inset-0 bottom-[50%] flex justify-center items-center text-white font-black text-5xl"
           onClick={() => tap()}>
@@ -752,7 +940,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
             <div className="tracking-widest mb-2">
               {padStart(`${Math.floor(gameMode.feet) ?? 0}`, 4, '0')}
             </div>
-            <div className="text-sm font-semibold">SCORE {gameMode.state}</div>
+            <div className="text-sm font-semibold">SCORE</div>
           </div>
         </div>
         <div
@@ -760,9 +948,9 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
           onClick={() => tap()}>
           {gameMode.state !== ArcadeGameStateEnum.GAME_OVER ? (
             <div className="text-center">
-              {gameMode.state == ArcadeGameStateEnum.STARTING
-                ? !isJumping && <div className="text-indigo">TAP TO START</div>
-                : ''}
+              {gameMode.state == ArcadeGameStateEnum.STARTING && (
+                <div className="text-indigo">TAP TO START</div>
+              )}
             </div>
           ) : (
             <div className="text-center">
@@ -795,6 +983,24 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
             </div>
           ))}
         </div>
+        {gameMode.state !== ArcadeGameStateEnum.GAME_OVER && (
+          <div className="absolute z-30 top-0 left-0 flex">
+            <div className="p-4">
+              <div
+                className="bg-white rounded-lg outline outline-b-4 outline-gray-500 p-2 px-3 text-black active:outline-0 cursor-pointer"
+                onClick={() => gameMode.togglePause()}>
+                <Icon name={gameMode.state == ArcadeGameStateEnum.PLAYING ? 'pause' : 'resume'} />
+              </div>
+            </div>
+            <div className="p-4">
+              <div
+                className="bg-white rounded-lg outline outline-b-4 outline-gray-500 p-2 px-3 text-black active:outline-0 cursor-pointer"
+                onClick={() => gameMode.toggleMute()}>
+                <Icon name={!gameMode.audio.muted ? 'mute' : 'unmute'} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
