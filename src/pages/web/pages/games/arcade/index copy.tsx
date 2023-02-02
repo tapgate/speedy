@@ -201,7 +201,6 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
   }, [tileIds]);
 
   useEffect(() => {
-    console.log('lives', gameMode.lives);
     gameModeRef.current = gameMode;
   }, [gameMode]);
 
@@ -431,11 +430,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
       const spawn = random < gameMode.obstacleChance;
 
-      console.log('spawnObstacleIfPossible', spawn);
-
       if (spawn) {
-        console.log('spawnObstacleIfPossible', true, lastTile);
-
         if (lastTile) {
           setTiles((prev) => {
             const newTiles = new Map<string, ITile>(prev);
@@ -464,11 +459,7 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
       const spawn = random < gameMode.healthChance;
 
-      console.log('spawnHealthIfPossible', spawn);
-
       if (spawn) {
-        console.log('spawnHealthIfPossible', true, lastTile);
-
         if (lastTile) {
           setTiles((prev) => {
             const newTiles = new Map<string, ITile>(prev);
@@ -479,8 +470,6 @@ export const ArcadeGame = ({ state, outfit, data, quit }: IArcadeGameProps) => {
 
           timeTillNextHealthSpawnRef.current = Date.now() + gameMode.spawnHealthSpeed;
         }
-
-        console.log('spawnHealthIfPossible', true, lastTile);
       }
     }
   };
