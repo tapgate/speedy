@@ -163,7 +163,7 @@ export const ClassicGame = ({ user, quit }: IClassicGamePageProps) => {
             <div className="w-full bg-tapgate-white-700 p-[0.5px] mt-1"></div>
           </div>
 
-          <div className="w-full h-[25vh] grid grid-cols-3 gap-x-4 py-4">
+          <div className="w-full h-[25%] grid grid-cols-3 gap-x-4 py-4">
             <div className="">
               <div className="w-full h-full flex justify-center items-center font-black bg-tapgate-black rounded-lg">
                 <div className="grid grid-rows-2">

@@ -10,6 +10,22 @@
     --pixel-size: 4;
     --grid-cell-size: calc(48px * var(--pixel-size));
   }
+
+  /* shrink pixel size on modile */
+  @media (max-width: 720px) {
+    :root {
+      --pixel-size: 2;
+      --grid-cell-size: calc(48px * var(--pixel-size));
+    }
+  }
+
+  /* shrink pixel size on mobile and landscape */
+  @media (max-width: 1080px) and (orientation: landscape) {
+    :root {
+      --pixel-size: 2;
+      --grid-cell-size: calc(48px * var(--pixel-size));
+    }
+  }
   
   .pixel-art {
     image-rendering: pixelated;
@@ -35,145 +51,40 @@
     transform: translate3d(0px, 0, 0);
   }
 
-  .character-container {
+  .sprite-container {
     animation-duration: 2s;
   }
 
-  .character-container .character .sheet {
+  .sprite-container .sprite .sheet {
     transition: all .5s ease-in-out;
   }
 
   
-  .character-container.dead {
+  .sprite-container.dead {
     opacity: 50;
   }
 
-  .character-container.dead .character .sheet {
+  .sprite-container.dead .sprite .sheet {
     filter: grayscale(100%);
   }
   
-  .character {
+  .sprite {
     overflow: hidden;
   }
   
-  .character > .outline-hover {
+  .sprite > .outline-hover {
     opacity: 0;
   }
   
-  .character.is-focused > .outline-hover {
+  .sprite.is-focused > .outline-hover {
     opacity: 1;
   }
   
-  .character, .character .sheet {
+ .sprite-sheet {
     background-size: contain;
-  }
-  
-  .character > .sheet {
     background-repeat: no-repeat;
   }
   
-  .character.move-down > .sheet {
-    animation: moveSheetDown .6s steps(4) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.idle-down > .sheet {
-    animation: moveSheetDown .6s steps(1) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.jump-down > .sheet {
-    transform: translate3d(0, 0, 0);
-    background-repeat: no-repeat;
-  }
-
-  .character.move-right > .sheet {
-    animation: moveSheetRight .6s steps(4) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.idle-right > .sheet {
-    animation: moveSheetRight .6s steps(1) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.jump-right > .sheet {
-    transform: translate3d(calc(-32px * var(--pixel-size)), calc(-64px * var(--pixel-size)), 0);
-    background-repeat: no-repeat;
-  }
-
-  .character.move-up > .sheet {
-    animation: moveSheetUp .6s steps(4) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.idle-up > .sheet {
-    animation: moveSheetUp .6s steps(1) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.jump-up > .sheet {
-    transform: translate3d(0, 0, 0);
-    background-repeat: no-repeat;
-  }
-
-  
-  .character.move-left > .sheet {
-    animation: moveSheetLeft .6s steps(4) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  .character.idle-left > .sheet {
-    animation: moveSheetLeft .6s steps(1) infinite;
-    background-repeat: no-repeat;
-  }
-  
-  
-  .character.jump-left > .sheet {
-    transform: translate3d(0, 0, 0);
-    background-repeat: no-repeat;
-  }
-  
-
-  @keyframes moveSheetDown {
-    from {
-      transform: translate3d(0px, 0, 0);
-    }
-  
-    to {
-      transform: translate3d(-100%, 0, 0);
-    }
-  }
-  
-  @keyframes moveSheetRight {
-    from {
-      transform: translate3d(0px, calc(-64px * var(--pixel-size)), 0);
-    }
-  
-    to {
-      transform: translate3d(-100%, calc(-64px * var(--pixel-size)), 0);
-    }
-  }
-  
-  @keyframes moveSheetUp {
-    from {
-      transform: translate3d(0px, calc(-128px * var(--pixel-size)), 0);
-    }
-  
-    to {
-      transform: translate3d(-100%, calc(-128px * var(--pixel-size)), 0);
-    }
-  }
-  
-  @keyframes moveSheetLeft {
-    from {
-      transform: translate3d(0px, calc(-192px * var(--pixel-size)), 0);
-    }
-  
-    to {
-      transform: translate3d(-100%, calc(-192px * var(--pixel-size)), 0);
-    }
-  }
 
   .map-object {
     animation: moveLeft 15s linear;
@@ -191,6 +102,7 @@
 
 
   html {
+    height: --webkit-fill-available;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }

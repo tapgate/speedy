@@ -69,7 +69,7 @@ function Menu() {
       <div className="w-full h-full bg-tapgate-gray text-tapgate-white shadow-lg border-l border-tapgate-black">
         <div className="relative w-full h-[20%] overflow-hidden bg-tapgate-black-400 flex justify-center items-center p-4">
           <div className="character-container absolute z-10 overflow-hidden">
-            <Character outfit={outfit?.code} />
+            <Character id="menu-character" outfit={outfit?.code} />
           </div>
         </div>
         <div className="w-full h-[5%] flex justify-center items-center bg-tapgate-black font-black">
