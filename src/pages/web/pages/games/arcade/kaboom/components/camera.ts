@@ -1,19 +1,13 @@
-import { GameObj, KaboomCtx, Vec2 } from 'kaboom';
+import { GameObj, KaboomCtx } from 'kaboom';
 import { ICharacterDirectionEnum } from '../classes/character';
 
 const KCamera = (k: KaboomCtx) => {
   return {
-    smoothFollow: (target: GameObj, offset: Vec2) => {
+    smoothFollow: (target: GameObj) => {
       const currentPos = k.vec2(0, 0);
 
       return {
         update() {
-          // lerp current position to target position
-          // const targetPos = k.vec2(target.pos.x + offset.x, target.pos.y + offset.y);
-
-          // k.camPos(targetPos);
-
-          // /*
           const cameraTarget = this as any;
           const player = k.get('player').shift();
 
@@ -38,7 +32,6 @@ const KCamera = (k: KaboomCtx) => {
 
             k.camPos(cameraTarget.pos);
           }
-          // */
         }
       };
     }

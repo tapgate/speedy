@@ -21,7 +21,7 @@ export enum ICharacterDirectionEnum {
 
 export enum ICharacterStateEnum {
   IDLE = 'idle',
-  WALKING = 'walking',
+  MOVING = 'walking',
   JUMPING = 'jumping',
   FALLING = 'falling',
   ATTACKING = 'attacking',
@@ -30,17 +30,101 @@ export enum ICharacterStateEnum {
 }
 
 export class Character extends GameObject {
-  public maxHealth = 3;
-  public health = 3;
-  public speed = 1;
-  public jumpHeight = 1;
-  public jumpSpeed = 1;
-  public canJump = true;
-  public canDoubleJump = true;
-  public canMove = true;
-  public canClimb = false;
-  public canDesend = false;
-  public previousDirection: ICharacterDirectionEnum = ICharacterDirectionEnum.RIGHT;
+  public get level() {
+    return Math.floor(Math.pow(this.exp + 1, 1 / 3));
+  }
+
+  private _exp = 0;
+
+  public get exp() {
+    return this._exp;
+  }
+
+  public get expToNextLevel() {
+    return Math.pow(this.level + 1, 3) - 1;
+  }
+
+  private _maxHealth = 3;
+
+  public get maxHealth() {
+    return this._maxHealth;
+  }
+
+  private _health = 3;
+
+  public get health() {
+    return this._health;
+  }
+
+  private _speed = 1;
+
+  public get speed() {
+    return this._speed;
+  }
+
+  private _sprintSpeed = 3;
+
+  public get sprintSpeed() {
+    return this._sprintSpeed;
+  }
+
+  private _isSprinting = false;
+
+  public get isSprinting() {
+    return this._isSprinting;
+  }
+
+  public set isSprinting(isSprinting: boolean) {
+    this._isSprinting = isSprinting;
+  }
+
+  private _jumpHeight = 1;
+
+  public get jumpHeight() {
+    return this._jumpHeight;
+  }
+
+  private _jumpSpeed = 1;
+
+  public get jumpSpeed() {
+    return this._jumpSpeed;
+  }
+
+  private _canJump = true;
+
+  public get canJump() {
+    return this._canJump;
+  }
+
+  private _canDoubleJump = true;
+
+  public get canDoubleJump() {
+    return this._canDoubleJump;
+  }
+
+  private _canMove = true;
+
+  public get canMove() {
+    return this._canMove;
+  }
+
+  private _canClimb = false;
+
+  public get canClimb() {
+    return this._canClimb;
+  }
+
+  private _canDesend = false;
+
+  public get canDesend() {
+    return this._canDesend;
+  }
+
+  private _previousDirection: ICharacterDirectionEnum = ICharacterDirectionEnum.RIGHT;
+
+  public get previousDirection() {
+    return this._previousDirection;
+  }
 
   private _facingDirection: ICharacterDirectionEnum = ICharacterDirectionEnum.RIGHT;
 
@@ -48,7 +132,7 @@ export class Character extends GameObject {
     return this._facingDirection;
   }
 
-  public set facingDirection(direction: ICharacterDirectionEnum) {
+  private set facingDirection(direction: ICharacterDirectionEnum) {
     this._facingDirection = direction;
     this.object.facingDirection = direction;
   }
@@ -181,14 +265,14 @@ export class Character extends GameObject {
   }
 
   reset(callback?: (character: Character) => void): void {
-    this.health = this.maxHealth;
-    this.canJump = true;
-    this.canDoubleJump = true;
-    this.canMove = true;
-    this.canClimb = false;
-    this.canDesend = false;
-    this.facingDirection = ICharacterDirectionEnum.RIGHT;
-    this.previousDirection = ICharacterDirectionEnum.RIGHT;
+    this._health = this.maxHealth;
+    this._canJump = true;
+    this._canDoubleJump = true;
+    this._canMove = true;
+    this._canClimb = false;
+    this._canDesend = false;
+    this._facingDirection = ICharacterDirectionEnum.RIGHT;
+    this._previousDirection = ICharacterDirectionEnum.RIGHT;
     this._state = ICharacterStateEnum.IDLE;
     this._outlined = false;
 
@@ -196,7 +280,13 @@ export class Character extends GameObject {
   }
 
   load(compList: any): void {
-    super.load(compList);
+    super.load([
+      ...compList,
+      {
+        facingDirection: ICharacterDirectionEnum.DOWN,
+        instance: this
+      }
+    ]);
 
     this.reset();
 
@@ -210,8 +300,8 @@ export class Character extends GameObject {
     });
 
     body.onGround(() => {
-      this.canJump = true;
-      this.canDoubleJump = false;
+      this._canJump = true;
+      this._canDoubleJump = false;
       this._state = ICharacterStateEnum.IDLE;
     });
 
@@ -221,10 +311,10 @@ export class Character extends GameObject {
       // check if wasd keys are still active
       if (k.isKeyDown('w') || k.isKeyDown('a') || k.isKeyDown('s') || k.isKeyDown('d')) {
         if (
-          this._state !== ICharacterStateEnum.WALKING &&
+          this._state !== ICharacterStateEnum.MOVING &&
           this._state !== ICharacterStateEnum.JUMPING
         ) {
-          this._state = ICharacterStateEnum.WALKING;
+          this._state = ICharacterStateEnum.MOVING;
           body.play(`walk-${this.facingDirection}`);
         }
       } else {
@@ -238,7 +328,7 @@ export class Character extends GameObject {
       const k = this.k;
 
       k.play('crash');
-      this.health -= 1;
+      this._health -= 1;
     });
 
     body.on('death', () => {
@@ -261,22 +351,26 @@ export class Character extends GameObject {
 
     if (body.isGrounded() && this.canJump) {
       _jump();
-      this.canJump = false;
-      this.canDoubleJump = true;
+      this._canJump = false;
+      this._canDoubleJump = true;
       this._state = ICharacterStateEnum.JUMPING;
     } else if (this.canDoubleJump) {
       _jump();
-      this.canDoubleJump = false;
+      this._canDoubleJump = false;
     }
   }
 
   walk(direction: ICharacterDirectionEnum) {
     const k = this.k;
     const body = this.object;
-    const speed = this.speed * 10 * 2;
+    let speed = this._speed * 10 * 2;
 
     if (this.canMove) {
-      this._state = ICharacterStateEnum.WALKING;
+      this._state = ICharacterStateEnum.MOVING;
+
+      if (this.isSprinting) {
+        speed *= this._sprintSpeed;
+      }
 
       switch (direction) {
         case ICharacterDirectionEnum.UP:
@@ -302,7 +396,7 @@ export class Character extends GameObject {
       }
     }
 
-    this.previousDirection = direction;
+    this._previousDirection = direction;
     this.facingDirection = direction;
   }
 
@@ -310,5 +404,21 @@ export class Character extends GameObject {
     const body = this.object;
     body.move(0, 0);
     this._state = ICharacterStateEnum.IDLE;
+  }
+
+  lockMovements() {
+    this._canMove = false;
+    this._canJump = false;
+    this._canDoubleJump = false;
+    this._canClimb = false;
+    this._canDesend = false;
+  }
+
+  unlockMovements() {
+    this._canMove = true;
+    this._canJump = true;
+    this._canDoubleJump = true;
+    this._canClimb = true;
+    this._canDesend = true;
   }
 }

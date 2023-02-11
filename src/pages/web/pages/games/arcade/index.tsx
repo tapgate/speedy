@@ -1,6 +1,5 @@
 import kaboom from 'kaboom';
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from '../../../../../components/icons';
 import MobileView from '../../../../../components/mobile-view';
 import { useGame } from '../../../../../context/game';
 import { useUser } from '../../../../../context/user';
@@ -11,6 +10,7 @@ import {
   ICharacterColorEnum,
   ICharacterDirectionEnum
 } from './kaboom/classes/character';
+import { UI } from './kaboom/classes/ui';
 import { Components } from './kaboom/components';
 import { GameMaps } from './kaboom/levels';
 
@@ -131,6 +131,8 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
 
     const player = new Character(k, ICharacterColorEnum.YELLOW, outfit);
 
+    const ui = new UI(k, player);
+
     setPlayer(player);
 
     let bgmAudio: any;
@@ -199,10 +201,17 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
           offset: k.vec2(0, 1),
           scale: k.vec2(0.25, 0.25)
         }),
-        k.body(),
-        {
-          facingDirection: ICharacterDirectionEnum.DOWN
-        }
+        k.body()
+      ]);
+
+      ui.load([
+        'ui',
+        k.pos(0, 0),
+        k.origin('topleft'),
+        k.layer('bg'),
+        k.fixed(),
+        k.rect(k.width(), k.height()),
+        k.opacity(0)
       ]);
 
       const { Camera } = comp;
@@ -214,7 +223,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
         k.origin('center'),
         k.color(75, 180, 255),
         k.opacity(0),
-        Camera.smoothFollow(player.object, k.vec2(0, -48)),
+        Camera.smoothFollow(player.object),
         'camera-target'
       ]);
 
@@ -246,6 +255,14 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       k.onKeyRelease(['a', 'd', 'w', 's'], () => {
         player.object.play(`idle-${player.facingDirection}`);
         player.stopWalking();
+      });
+
+      k.onKeyPress('shift', () => {
+        player.isSprinting = true;
+      });
+
+      k.onKeyRelease('shift', () => {
+        player.isSprinting = false;
       });
 
       k.onUpdate('block', (b: any) => {
@@ -356,19 +373,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
         </div>
       </div>
     ) : (
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <div className="absolute top-0 right-0 p-2 lives flex flex-row-reverse">
-          {Array.from({ length: player?.maxHealth ?? 0 }).map((_, i) => (
-            <div key={i} className="relative flex justify-center items-center w-[32px] h-[32px]">
-              {(player?.health ?? 0) > i ? (
-                <Icon name="HeartSolid" className="text-xl text-red" />
-              ) : (
-                <Icon name="HeartSolid" className="text-xl text-black" />
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="absolute inset-0 z-20 pointer-events-none"></div>
     );
 
   return (

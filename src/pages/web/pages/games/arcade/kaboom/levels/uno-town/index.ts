@@ -1,4 +1,5 @@
-import { BodyComp, KaboomCtx, PosComp } from 'kaboom';
+import { BodyComp, GameObj, HealthComp, KaboomCtx, PosComp } from 'kaboom';
+import { Character, ICharacterDirectionEnum } from '../../classes/character';
 import { mapTile } from '../../constants';
 import { IMapLevel } from '../types';
 
@@ -208,15 +209,79 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
             ...definitions()
           });
 
-          k.add([
+          const npc = k.add([
             k.sprite('npc'),
             k.pos(map.getPos(41, 11.4)),
             k.origin('center'),
             k.area({
               offset: k.vec2(0, 1),
               scale: k.vec2(0.25, 0.25)
-            })
+            }),
+            {
+              damageRadius: 24
+            }
           ]);
+
+          npc.onUpdate(() => {
+            // if player is on the same y axis as the npc and is within 32px of the npc damage the player and knock them back out of the radius
+            const player = k.get('player').shift() as unknown as BodyComp &
+              PosComp &
+              HealthComp &
+              GameObj;
+            if (player && player.pos) {
+              const instance = player.instance as unknown as Character;
+
+              if (player.pos.y > npc.pos.y && player.pos.dist(npc.pos) <= npc.damageRadius) {
+                // make npc turn to face player
+                const direction: ICharacterDirectionEnum =
+                  player.pos.x > npc.pos.x
+                    ? ICharacterDirectionEnum.RIGHT
+                    : ICharacterDirectionEnum.LEFT;
+
+                //  jump up and down
+                npc.play('jump-' + direction);
+
+                npc.pos.y -= 2;
+                k.wait(0.3, () => {
+                  npc.pos.y += 2;
+                  npc.play('idle-' + direction);
+                });
+
+                k.wait(1.5, () => {
+                  npc.play('idle-' + ICharacterDirectionEnum.DOWN);
+                });
+
+                // make player flash opacity
+                instance.lockMovements();
+
+                player.use(k.opacity(0.5));
+                k.wait(0.1, () => {
+                  player.use(k.opacity(1));
+                });
+                k.wait(0.15, () => {
+                  player.use(k.opacity(0.5));
+                });
+                k.wait(0.2, () => {
+                  player.use(k.opacity(1));
+                });
+                k.wait(0.25, () => {
+                  player.use(k.opacity(0.5));
+                });
+                k.wait(0.3, () => {
+                  player.use(k.opacity(1));
+                  instance.unlockMovements();
+                });
+
+                player.hurt(1);
+
+                // knock back in the opposite direction of the npc
+                player.pos.x = Math.ceil(
+                  player.pos.x +
+                    (npc.pos.x > player.pos.x ? -npc.damageRadius : npc.damageRadius) * 1.05
+                );
+              }
+            }
+          });
 
           return map;
         }
