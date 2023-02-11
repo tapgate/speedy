@@ -1,4 +1,4 @@
-import { KaboomCtx } from 'kaboom';
+import { BodyComp, KaboomCtx, PosComp } from 'kaboom';
 import { mapTile } from '../../constants';
 import { IMapLevel } from '../types';
 
@@ -59,13 +59,13 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
     },
     'maps/001/ground-sm-t': {
       ...mapTile,
-      x: 3,
+      x: 48,
       y: 0
     },
     'maps/001/ground-sm-m': {
       ...mapTile,
-      x: 0,
-      y: 0
+      x: 48,
+      y: 16
     },
     'maps/001/ground-sm-b': {
       ...mapTile,
@@ -91,28 +91,87 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
       ...mapTile,
       x: 48,
       y: 48
+    },
+    'maps/001/ground-tl-ground': {
+      ...mapTile,
+      x: 0,
+      y: 64
+    },
+    'maps/001/ground-tr-ground': {
+      ...mapTile,
+      x: 32,
+      y: 64
     }
   });
+
+  type PlatformFloorComp = {
+    update: () => void;
+  };
+
+  const playerMadeSolid = (s: any, player: any): boolean => {
+    if (player && player.pos) {
+      return s.pos.dist(player.pos) <= 32;
+    }
+
+    return false;
+  };
+
+  function solidOptimized() {
+    return {
+      ...k.area(),
+      update() {
+        const s = this as any;
+        const player = k.get('player').shift() as unknown as BodyComp & PosComp;
+        s.solid = playerMadeSolid(s, player);
+      }
+    } as PlatformFloorComp;
+  }
+
+  function jumpToPlatform() {
+    return {
+      ...k.area(),
+      update() {
+        const s = this as any;
+        const player = k.get('player').shift() as unknown as BodyComp & PosComp;
+        s.solid = player.pos.y < s.pos.y && playerMadeSolid(s, player);
+
+        if (player && player.pos) {
+          // if player is directly under this object set solid to false
+          if (
+            player.pos.y > s.pos.y &&
+            player.pos.x > s.pos.x &&
+            player.pos.x < s.pos.x + s.width
+          ) {
+            s.solid = false;
+            console.log('s', s);
+          }
+        }
+      }
+    } as PlatformFloorComp;
+  }
 
   const definitions = () => ({
     width: 16,
     height: 16,
-    '(': () => [k.sprite('maps/001/ground-tl'), k.area(), k.solid()],
-    '#': () => [k.sprite('maps/001/ground-tc'), k.area(), k.solid()],
-    ')': () => [k.sprite('maps/001/ground-tr'), k.area(), k.solid()],
-    '[': () => [k.sprite('maps/001/ground-ml'), k.area(), k.solid()],
+    '⌜': () => [k.sprite('maps/001/ground-tl'), solidOptimized()],
+    '―': () => [k.sprite('maps/001/ground-tc'), solidOptimized()],
+    '⌝': () => [k.sprite('maps/001/ground-tr'), solidOptimized()],
+    '(': () => [k.sprite('maps/001/ground-tl'), jumpToPlatform()],
+    '#': () => [k.sprite('maps/001/ground-tc'), jumpToPlatform()],
+    ')': () => [k.sprite('maps/001/ground-tr'), jumpToPlatform()],
+    '[': () => [k.sprite('maps/001/ground-ml'), solidOptimized()],
     '@': () => [k.sprite('maps/001/ground-mc')],
-    ']': () => [k.sprite('maps/001/ground-mr'), k.area(), k.solid()],
-    '{': () => [k.sprite('maps/001/ground-bl'), k.area(), k.solid()],
+    ']': () => [k.sprite('maps/001/ground-mr'), solidOptimized()],
+    '!': () => [k.sprite('maps/001/ground-ml')],
+    '|': () => [k.sprite('maps/001/ground-mr')],
+    '{': () => [k.sprite('maps/001/ground-bl'), solidOptimized()],
     '=': () => [k.sprite('maps/001/ground-bc')],
-    '}': () => [k.sprite('maps/001/ground-br'), k.area(), k.solid()],
-    '(#)': () => [k.sprite('maps/001/ground-sm-t'), k.area(), k.solid()],
-    '[@]': () => [k.sprite('maps/001/ground-sm-m'), k.area(), k.solid()],
-    '{=}': () => [k.sprite('maps/001/ground-sm-b'), k.area(), k.solid()]
-    // '': () => [k.sprite('slab-l'), k.area(), k.solid()],
-    // '': () => [k.sprite('slab-c'), k.area(), k.solid()],
-    // '': () => [k.sprite('slab-r'), k.area(), k.solid()],
-    // '': () => [k.sprite('slab-sm'), k.area(), k.solid()],
+    '}': () => [k.sprite('maps/001/ground-br'), solidOptimized()],
+    '+': () => [k.sprite('maps/001/ground-sm-t'), solidOptimized()],
+    '-': () => [k.sprite('maps/001/ground-sm-m'), solidOptimized()],
+    '*': () => [k.sprite('maps/001/ground-sm-b'), solidOptimized()],
+    '/': () => [k.sprite('maps/001/ground-tl-ground'), solidOptimized()],
+    '\\': () => [k.sprite('maps/001/ground-tr-ground'), solidOptimized()]
   });
 
   return {
@@ -122,19 +181,21 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
         name: 'Route 1',
         load: () => {
           const mapLayout = [
-            'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '(###)xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '[@@@]xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '[@@@]xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '[@@@]xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '[@@@]xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '[@@@]xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            '                                                                                                   ',
+            '                                                                                                   ',
+            '                                                                                                   ',
+            '                                                                                                   ',
+            '                                                                                                   ',
+            '                                                                                                   ',
+            '⌜―――⌝                                                                                              ',
+            '[@@@]                                                                                              ',
+            '[@@@]                                                                                              ',
+            '[@@@]                                  (##)                                                        ',
+            '[@@@]                                  !@@|                                                        ',
+            '[@@@]                                  !@@|                                                        ',
             '[@(###############################################################################################)',
+            '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
+            '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
@@ -144,17 +205,18 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
           ];
 
           const map = k.addLevel(mapLayout, {
-            ...definitions(),
-            '%': () => [
-              k.sprite('npc'),
-              k.pos(6, 6),
-              k.origin('center'),
-              k.area({
-                offset: k.vec2(0, 1),
-                scale: k.vec2(0.25, 0.25)
-              })
-            ]
+            ...definitions()
           });
+
+          k.add([
+            k.sprite('npc'),
+            k.pos(map.getPos(41, 11.4)),
+            k.origin('center'),
+            k.area({
+              offset: k.vec2(0, 1),
+              scale: k.vec2(0.25, 0.25)
+            })
+          ]);
 
           return map;
         }

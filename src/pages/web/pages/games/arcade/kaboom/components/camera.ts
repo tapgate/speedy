@@ -1,40 +1,46 @@
 import { GameObj, KaboomCtx, Vec2 } from 'kaboom';
+import { ICharacterDirectionEnum } from '../classes/character';
 
 const KCamera = (k: KaboomCtx) => {
   return {
     smoothFollow: (target: GameObj, offset: Vec2) => {
       const currentPos = k.vec2(0, 0);
 
-      k.onUpdate(() => {
-        // lerp current position to target position
-        const targetPos = k.vec2(target.pos.x + offset.x, target.pos.y + offset.y);
+      return {
+        update() {
+          // lerp current position to target position
+          // const targetPos = k.vec2(target.pos.x + offset.x, target.pos.y + offset.y);
 
-        k.camPos(targetPos);
+          // k.camPos(targetPos);
 
-        /*
-        const facingDirection = player.facingDirection;
+          // /*
+          const cameraTarget = this as any;
+          const player = k.get('player').shift();
 
-        const body = player.object;
+          if (player) {
+            const facingDirection = player.facingDirection;
 
-        const cameraTargetPos = body.pos.add(
-          facingDirection === ICharacterDirectionEnum.UP
-            ? k.vec2(0, -48)
-            : facingDirection === ICharacterDirectionEnum.LEFT
-            ? k.vec2(-48, 0)
-            : facingDirection === ICharacterDirectionEnum.DOWN
-            ? k.vec2(0, 48)
-            : k.vec2(48, 0)
-        );
+            const cameraTargetPos = player.pos.add(
+              facingDirection === ICharacterDirectionEnum.UP
+                ? k.vec2(0, -48)
+                : facingDirection === ICharacterDirectionEnum.LEFT
+                ? k.vec2(-48, 0)
+                : facingDirection === ICharacterDirectionEnum.DOWN
+                ? k.vec2(0, 48)
+                : k.vec2(48, 0)
+            );
 
-        // offset y camera target position to be above player
-        cameraTargetPos.y -= 48;
+            // offset y camera target position to be above player
+            cameraTargetPos.y -= 48;
 
-        // lerp camera target position
-        cameraTarget.pos = cameraTarget.pos.lerp(cameraTargetPos, 0.05);
+            // lerp camera target position
+            cameraTarget.pos = cameraTarget.pos.lerp(cameraTargetPos, 0.1);
 
-        k.camPos(cameraTarget.pos);
-        */
-      });
+            k.camPos(cameraTarget.pos);
+          }
+          // */
+        }
+      };
     }
   };
 };

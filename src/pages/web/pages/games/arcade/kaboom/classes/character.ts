@@ -40,8 +40,18 @@ export class Character extends GameObject {
   public canMove = true;
   public canClimb = false;
   public canDesend = false;
-  public facingDirection: ICharacterDirectionEnum = ICharacterDirectionEnum.RIGHT;
   public previousDirection: ICharacterDirectionEnum = ICharacterDirectionEnum.RIGHT;
+
+  private _facingDirection: ICharacterDirectionEnum = ICharacterDirectionEnum.RIGHT;
+
+  public get facingDirection() {
+    return this._facingDirection;
+  }
+
+  public set facingDirection(direction: ICharacterDirectionEnum) {
+    this._facingDirection = direction;
+    this.object.facingDirection = direction;
+  }
 
   private _state: ICharacterStateEnum = ICharacterStateEnum.IDLE;
 
@@ -261,8 +271,9 @@ export class Character extends GameObject {
   }
 
   walk(direction: ICharacterDirectionEnum) {
+    const k = this.k;
     const body = this.object;
-    const speed = this.speed * 100 * 1.5;
+    const speed = this.speed * 10 * 2;
 
     if (this.canMove) {
       this._state = ICharacterStateEnum.WALKING;
@@ -270,19 +281,23 @@ export class Character extends GameObject {
       switch (direction) {
         case ICharacterDirectionEnum.UP:
           if (this.canClimb) {
-            body.move(0, -speed);
+            // lerp up
+            body.pos.y = k.lerp(body.pos.y, body.pos.y - speed, 0.1);
           }
           break;
         case ICharacterDirectionEnum.LEFT:
-          body.move(-speed, 0);
+          // lerp to the left
+          body.pos.x = k.lerp(body.pos.x, body.pos.x - speed, 0.1);
           break;
         case ICharacterDirectionEnum.DOWN:
           if (this.canDesend) {
-            body.move(0, speed);
+            // lerp down
+            body.pos.y = k.lerp(body.pos.y, body.pos.y + speed, 0.1);
           }
           break;
         case ICharacterDirectionEnum.RIGHT:
-          body.move(speed, 0);
+          // lerp to the right
+          body.pos.x = k.lerp(body.pos.x, body.pos.x + speed, 0.1);
           break;
       }
     }

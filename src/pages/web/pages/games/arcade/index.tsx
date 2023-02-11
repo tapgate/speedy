@@ -43,9 +43,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
   const FLOOR_HEIGHT = 32;
   const SPEED = 120;
 
-  const [maxLives, setMaxLives] = useState(0);
-  const [lives, setLives] = useState(0);
-  const [points, setPoints] = useState(0);
+  const [player, setPlayer] = useState<Character | null>(null);
   const [loading, setLoading] = useState(true);
   const [gameState, setGameState] = useState<IGameStateEnum>(IGameStateEnum.STARTING);
 
@@ -133,6 +131,8 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
 
     const player = new Character(k, ICharacterColorEnum.YELLOW, outfit);
 
+    setPlayer(player);
+
     let bgmAudio: any;
 
     k.scene('game-over', () => {
@@ -163,7 +163,21 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
     });
 
     k.scene('game', () => {
-      k.layers(['sky', 'clouds', 'bg', 'game', 'ui'], 'game');
+      const layers = [
+        'sky',
+        'clouds',
+        'bg',
+        ...new Array(3)
+          .fill(0)
+          .map((x, i) => `platform-${i}`)
+          .reverse(),
+        'game',
+        'ui'
+      ];
+
+      console.log({ layers });
+
+      k.layers(layers, 'game');
 
       bgmAudio?.stop();
 
@@ -179,13 +193,16 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
         'player',
         k.health(player.maxHealth),
         k.sprite('player'),
-        k.pos(map.getPos(6, 4)),
+        k.pos(map.getPos(38, 11)),
         k.origin('center'),
         k.area({
           offset: k.vec2(0, 1),
           scale: k.vec2(0.25, 0.25)
         }),
-        k.body()
+        k.body(),
+        {
+          facingDirection: ICharacterDirectionEnum.DOWN
+        }
       ]);
 
       const { Camera } = comp;
@@ -193,10 +210,10 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       const cameraTarget = k.add([
         k.rect(16, 16),
         k.area(),
-        k.pos(k.center()),
+        k.pos(player.object.pos),
         k.origin('center'),
         k.color(75, 180, 255),
-        k.opacity(0.25),
+        k.opacity(0),
         Camera.smoothFollow(player.object, k.vec2(0, -48)),
         'camera-target'
       ]);
@@ -341,9 +358,9 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
     ) : (
       <div className="absolute inset-0 z-20 pointer-events-none">
         <div className="absolute top-0 right-0 p-2 lives flex flex-row-reverse">
-          {Array.from({ length: maxLives ?? 0 }).map((_, i) => (
+          {Array.from({ length: player?.maxHealth ?? 0 }).map((_, i) => (
             <div key={i} className="relative flex justify-center items-center w-[32px] h-[32px]">
-              {lives > i ? (
+              {(player?.health ?? 0) > i ? (
                 <Icon name="HeartSolid" className="text-xl text-red" />
               ) : (
                 <Icon name="HeartSolid" className="text-xl text-black" />
