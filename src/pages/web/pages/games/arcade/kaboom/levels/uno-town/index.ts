@@ -1,4 +1,4 @@
-import { BodyComp, Comp, LevelOpt, PosComp } from 'kaboom';
+import { Comp, LevelOpt } from 'kaboom';
 import { Character, ICharacterDirectionEnum } from '../../classes/character';
 import { UI } from '../../classes/ui';
 import { Components } from '../../components';
@@ -120,138 +120,29 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
     return false;
   };
 
-  function solidOptimized() {
-    return {
-      update() {
-        const s = this as any;
-        const player = k.get('player').shift() as unknown as BodyComp & PosComp;
-        s.solid = true;
-      }
-    } as PlatformFloorComp;
-  }
-
-  function jumpToPlatform() {
-    return {
-      update() {
-        const s = this as any;
-        const player = k.level.get('player').shift() as unknown as BodyComp & PosComp;
-
-        if (player) {
-          s.solid = player.pos.y < s.pos.y && playerMadeSolid(s, player);
-
-          if (player && player.pos) {
-            // if player is directly under this object set solid to false
-            if (
-              player.pos.y > s.pos.y &&
-              player.pos.x > s.pos.x &&
-              player.pos.x < s.pos.x + s.width
-            ) {
-              s.solid = false;
-            }
-          }
-        }
-      }
-    } as PlatformFloorComp;
-  }
-
   const definitions = (): LevelOpt => ({
     tileWidth: 16,
     tileHeight: 16,
     tiles: {
-      '⌜': () => [
-        k.sprite('maps/001/ground-tl'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '―': () => [
-        k.sprite('maps/001/ground-tc'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '⌝': () => [
-        k.sprite('maps/001/ground-tr'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '(': () => [
-        k.sprite('maps/001/ground-tl'),
-        k.area(),
-        k.body({ isStatic: true }),
-        jumpToPlatform()
-      ],
-      '#': () => [
-        k.sprite('maps/001/ground-tc'),
-        k.area(),
-        k.body({ isStatic: true }),
-        jumpToPlatform()
-      ],
-      ')': () => [
-        k.sprite('maps/001/ground-tr'),
-        k.area(),
-        k.body({ isStatic: true }),
-        jumpToPlatform()
-      ],
-      '[': () => [
-        k.sprite('maps/001/ground-ml'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
+      '⌜': () => [k.sprite('maps/001/ground-tl'), k.area(), k.body({ isStatic: true })],
+      '―': () => [k.sprite('maps/001/ground-tc'), k.area(), k.body({ isStatic: true })],
+      '⌝': () => [k.sprite('maps/001/ground-tr'), k.area(), k.body({ isStatic: true })],
+      '(': () => [k.sprite('maps/001/ground-tl'), k.area(), k.body({ isStatic: true })],
+      '#': () => [k.sprite('maps/001/ground-tc'), k.area(), k.body({ isStatic: true })],
+      ')': () => [k.sprite('maps/001/ground-tr'), k.area(), k.body({ isStatic: true })],
+      '[': () => [k.sprite('maps/001/ground-ml'), k.area(), k.body({ isStatic: true })],
       '@': () => [k.sprite('maps/001/ground-mc')],
-      ']': () => [
-        k.sprite('maps/001/ground-mr'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
+      ']': () => [k.sprite('maps/001/ground-mr'), k.area(), k.body({ isStatic: true })],
       '!': () => [k.sprite('maps/001/ground-ml')],
       '|': () => [k.sprite('maps/001/ground-mr')],
-      '{': () => [
-        k.sprite('maps/001/ground-bl'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
+      '{': () => [k.sprite('maps/001/ground-bl'), k.area(), k.body({ isStatic: true })],
       '=': () => [k.sprite('maps/001/ground-bc')],
-      '}': () => [
-        k.sprite('maps/001/ground-br'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '+': () => [
-        k.sprite('maps/001/ground-sm-t'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '-': () => [
-        k.sprite('maps/001/ground-sm-m'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '*': () => [
-        k.sprite('maps/001/ground-sm-b'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '/': () => [
-        k.sprite('maps/001/ground-tl-ground'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ],
-      '\\': () => [
-        k.sprite('maps/001/ground-tr-ground'),
-        k.area(),
-        k.body({ isStatic: true }),
-        solidOptimized()
-      ]
+      '}': () => [k.sprite('maps/001/ground-br'), k.area(), k.body({ isStatic: true })],
+      '+': () => [k.sprite('maps/001/ground-sm-t'), k.area(), k.body({ isStatic: true })],
+      '-': () => [k.sprite('maps/001/ground-sm-m'), k.area(), k.body({ isStatic: true })],
+      '*': () => [k.sprite('maps/001/ground-sm-b'), k.area(), k.body({ isStatic: true })],
+      '/': () => [k.sprite('maps/001/ground-tl-ground'), k.area(), k.body({ isStatic: true })],
+      '\\': () => [k.sprite('maps/001/ground-tr-ground'), k.area(), k.body({ isStatic: true })]
     }
   });
 

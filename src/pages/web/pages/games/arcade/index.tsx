@@ -42,8 +42,10 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
   const [loading, setLoading] = useState(true);
   const [gameState, setGameState] = useState<IGameStateEnum>(IGameStateEnum.STARTING);
 
+  const sceneContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const kaboomRef = useRef<any>(null);
+  const kaboomScaleRef = useRef<number>(4);
 
   useEffect(() => {
     const onResize = () => {
@@ -56,6 +58,11 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
     };
 
     window.addEventListener('resize', onResize);
+
+    // if window is a mobile device, set scale to 0.5
+    if (window.innerWidth < 768) {
+      kaboomScaleRef.current = 2;
+    }
 
     return () => {
       try {
@@ -78,14 +85,22 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
   }, [gameState]);
 
   const loadGame = (canvas: HTMLCanvasElement) => {
-    kaboomRef.current = kaboom({
-      global: false,
-      canvas: canvas,
-      scale: 4,
-      font: 'minecraft',
-      crisp: true,
-      debug: true
-    }) as IKaboomCtxExt;
+    if (!kaboomRef.current) {
+      // get screen actual size
+      const width = sceneContainerRef.current?.clientWidth || 0;
+
+      console.log({ width });
+
+      kaboomRef.current = kaboom({
+        global: false,
+        canvas: canvas,
+        scale: kaboomScaleRef.current,
+        font: 'minecraft',
+        crisp: true,
+        debug: true,
+        ...(kaboomScaleRef.current < 4 ? ({ width, height: width } as any) : {})
+      }) as IKaboomCtxExt;
+    }
 
     const k = kaboomRef.current;
 
@@ -325,7 +340,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
     );
 
   return (
-    <div className="relative w-full h-full">
+    <div id="scene-container" className="relative w-full h-full" ref={sceneContainerRef}>
       {HUD}
       <canvas
         id="scene"

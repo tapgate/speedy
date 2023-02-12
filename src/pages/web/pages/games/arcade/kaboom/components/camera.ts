@@ -14,14 +14,18 @@ const KCamera = (k: KaboomCtx) => {
           if (player) {
             const facingDirection = player.facingDirection;
 
+            const mod = 48;
+
+            // TODO: based on some scale change mod
+
             const cameraTargetPos = player.pos.add(
               facingDirection === ICharacterDirectionEnum.UP
-                ? k.vec2(0, -48)
+                ? k.vec2(0, -mod)
                 : facingDirection === ICharacterDirectionEnum.LEFT
-                ? k.vec2(-48, 0)
+                ? k.vec2(-mod, 0)
                 : facingDirection === ICharacterDirectionEnum.DOWN
-                ? k.vec2(0, 48)
-                : k.vec2(48, 0)
+                ? k.vec2(0, mod)
+                : k.vec2(mod, 0)
             );
 
             // offset y camera target position to be above player

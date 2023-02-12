@@ -1,4 +1,4 @@
-import { KaboomCtx, GameObj, SpriteComp, SpriteAtlasData, Key, GamepadButton } from 'kaboom';
+import { KaboomCtx, GameObj, SpriteComp, SpriteAtlasData, Key, GamepadButton, Vec2 } from 'kaboom';
 import { IItem } from '../../../../../../../models/item';
 import { IKaboomCtxExt } from '../shared/types';
 import { GameObject } from './_object';
@@ -715,6 +715,54 @@ export class Character extends GameObject {
             this.enterState('walking');
           }
         });
+      });
+
+      let previousTouchPos = k.vec2(0, 0);
+      let jumpOnRelease: number | null = null;
+
+      // based on touch drag direction (mobile)
+      k.onTouchMove((pos: Vec2, t: Touch) => {
+        console.log('touch move', pos);
+
+        if (jumpOnRelease === t.identifier) {
+          jumpOnRelease = null;
+        }
+
+        if (this.canMove) {
+          let direction = ICharacterDirectionEnum.NONE;
+
+          const diff = pos.sub(previousTouchPos);
+          previousTouchPos = pos;
+
+          console.log('diff', diff);
+
+          if (Math.abs(diff.x) > 0.01) {
+            if (diff.x > 0) {
+              direction = ICharacterDirectionEnum.RIGHT;
+            } else {
+              direction = ICharacterDirectionEnum.LEFT;
+            }
+          }
+
+          if (direction !== ICharacterDirectionEnum.NONE) {
+            this.walk(direction);
+          }
+        }
+      });
+
+      k.onTouchStart((pos: Vec2, t: Touch) => {
+        jumpOnRelease = t.identifier;
+      });
+
+      k.onTouchEnd((pos: Vec2, t: Touch) => {
+        if (jumpOnRelease === t.identifier) {
+          jumpOnRelease = null;
+          this.jump();
+        } else {
+          console.log('touch end');
+          previousTouchPos = k.vec2(0, 0);
+          this.stopWalking();
+        }
       });
     }
 
