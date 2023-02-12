@@ -1,29 +1,47 @@
-import { KaboomCtx, CompList } from 'kaboom';
-import uuid from 'react-uuid';
+import { CompList, GameObj } from 'kaboom';
+import { IKaboomCtxExt } from '../shared/types';
 
 export class GameObject {
-  protected k: KaboomCtx;
-
-  public id: string;
-
-  private _object: any;
-
+  protected k: IKaboomCtxExt;
+  private _compList: CompList<any>;
+  private _object: GameObj | undefined;
   public get object() {
     return this._object;
   }
 
-  constructor(k: KaboomCtx) {
+  constructor(k: IKaboomCtxExt, compList: CompList<any>) {
     this.k = k;
-    this.id = uuid();
+    this._compList = compList;
   }
 
-  load(compList: CompList<any>) {
-    const gameObj = this.k.add(compList);
-
-    this._object = gameObj;
+  static generateSptes(k: IKaboomCtxExt) {
+    // Override this method to generate sprites
   }
 
-  destroy() {
-    this.k.destroy(this._object);
+  init(level: GameObj<any>): GameObj {
+    console.log({
+      level,
+      compList: this._compList
+    });
+    this._object = level.spawn(this._compList, level.spawnPoint);
+    return this._object!;
+  }
+
+  add(compList: any[]): GameObj | undefined {
+    if (this.object) {
+      return this.object.add(compList);
+    }
+
+    return undefined;
+  }
+
+  destroy(obj?: GameObj) {
+    if (obj) {
+      this.k.destroy(obj);
+    } else {
+      if (this.object) {
+        this.object.destroy();
+      }
+    }
   }
 }

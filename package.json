@@ -20,7 +20,7 @@
     "cross-env": "^7.0.3",
     "daisyui": "^2.46.1",
     "gh-pages": "^4.0.0",
-    "kaboom": "^2000.2.10",
+    "kaboom": "^3000.0.0-beta.2",
     "lodash": "^4.17.21",
     "pocketbase": "^0.10.0",
     "react": "^18.2.0",

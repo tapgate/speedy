@@ -1,9 +1,12 @@
-import { BodyComp, GameObj, HealthComp, KaboomCtx, PosComp } from 'kaboom';
+import { BodyComp, Comp, LevelOpt, PosComp } from 'kaboom';
 import { Character, ICharacterDirectionEnum } from '../../classes/character';
+import { UI } from '../../classes/ui';
+import { Components } from '../../components';
 import { mapTile } from '../../constants';
+import { IKaboomCtxExt } from '../../shared/types';
 import { IMapLevel } from '../types';
 
-export const Unotown = (k: KaboomCtx): IMapLevel => {
+export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
   k.loadSpriteAtlas('images/map/001.png', {
     map001: {
       x: 0,
@@ -119,60 +122,137 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
 
   function solidOptimized() {
     return {
-      ...k.area(),
       update() {
         const s = this as any;
         const player = k.get('player').shift() as unknown as BodyComp & PosComp;
-        s.solid = playerMadeSolid(s, player);
+        s.solid = true;
       }
     } as PlatformFloorComp;
   }
 
   function jumpToPlatform() {
     return {
-      ...k.area(),
       update() {
         const s = this as any;
-        const player = k.get('player').shift() as unknown as BodyComp & PosComp;
-        s.solid = player.pos.y < s.pos.y && playerMadeSolid(s, player);
+        const player = k.level.get('player').shift() as unknown as BodyComp & PosComp;
 
-        if (player && player.pos) {
-          // if player is directly under this object set solid to false
-          if (
-            player.pos.y > s.pos.y &&
-            player.pos.x > s.pos.x &&
-            player.pos.x < s.pos.x + s.width
-          ) {
-            s.solid = false;
-            console.log('s', s);
+        if (player) {
+          s.solid = player.pos.y < s.pos.y && playerMadeSolid(s, player);
+
+          if (player && player.pos) {
+            // if player is directly under this object set solid to false
+            if (
+              player.pos.y > s.pos.y &&
+              player.pos.x > s.pos.x &&
+              player.pos.x < s.pos.x + s.width
+            ) {
+              s.solid = false;
+            }
           }
         }
       }
     } as PlatformFloorComp;
   }
 
-  const definitions = () => ({
-    width: 16,
-    height: 16,
-    '⌜': () => [k.sprite('maps/001/ground-tl'), solidOptimized()],
-    '―': () => [k.sprite('maps/001/ground-tc'), solidOptimized()],
-    '⌝': () => [k.sprite('maps/001/ground-tr'), solidOptimized()],
-    '(': () => [k.sprite('maps/001/ground-tl'), jumpToPlatform()],
-    '#': () => [k.sprite('maps/001/ground-tc'), jumpToPlatform()],
-    ')': () => [k.sprite('maps/001/ground-tr'), jumpToPlatform()],
-    '[': () => [k.sprite('maps/001/ground-ml'), solidOptimized()],
-    '@': () => [k.sprite('maps/001/ground-mc')],
-    ']': () => [k.sprite('maps/001/ground-mr'), solidOptimized()],
-    '!': () => [k.sprite('maps/001/ground-ml')],
-    '|': () => [k.sprite('maps/001/ground-mr')],
-    '{': () => [k.sprite('maps/001/ground-bl'), solidOptimized()],
-    '=': () => [k.sprite('maps/001/ground-bc')],
-    '}': () => [k.sprite('maps/001/ground-br'), solidOptimized()],
-    '+': () => [k.sprite('maps/001/ground-sm-t'), solidOptimized()],
-    '-': () => [k.sprite('maps/001/ground-sm-m'), solidOptimized()],
-    '*': () => [k.sprite('maps/001/ground-sm-b'), solidOptimized()],
-    '/': () => [k.sprite('maps/001/ground-tl-ground'), solidOptimized()],
-    '\\': () => [k.sprite('maps/001/ground-tr-ground'), solidOptimized()]
+  const definitions = (): LevelOpt => ({
+    tileWidth: 16,
+    tileHeight: 16,
+    tiles: {
+      '⌜': () => [
+        k.sprite('maps/001/ground-tl'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '―': () => [
+        k.sprite('maps/001/ground-tc'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '⌝': () => [
+        k.sprite('maps/001/ground-tr'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '(': () => [
+        k.sprite('maps/001/ground-tl'),
+        k.area(),
+        k.body({ isStatic: true }),
+        jumpToPlatform()
+      ],
+      '#': () => [
+        k.sprite('maps/001/ground-tc'),
+        k.area(),
+        k.body({ isStatic: true }),
+        jumpToPlatform()
+      ],
+      ')': () => [
+        k.sprite('maps/001/ground-tr'),
+        k.area(),
+        k.body({ isStatic: true }),
+        jumpToPlatform()
+      ],
+      '[': () => [
+        k.sprite('maps/001/ground-ml'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '@': () => [k.sprite('maps/001/ground-mc')],
+      ']': () => [
+        k.sprite('maps/001/ground-mr'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '!': () => [k.sprite('maps/001/ground-ml')],
+      '|': () => [k.sprite('maps/001/ground-mr')],
+      '{': () => [
+        k.sprite('maps/001/ground-bl'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '=': () => [k.sprite('maps/001/ground-bc')],
+      '}': () => [
+        k.sprite('maps/001/ground-br'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '+': () => [
+        k.sprite('maps/001/ground-sm-t'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '-': () => [
+        k.sprite('maps/001/ground-sm-m'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '*': () => [
+        k.sprite('maps/001/ground-sm-b'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '/': () => [
+        k.sprite('maps/001/ground-tl-ground'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ],
+      '\\': () => [
+        k.sprite('maps/001/ground-tr-ground'),
+        k.area(),
+        k.body({ isStatic: true }),
+        solidOptimized()
+      ]
+    }
   });
 
   return {
@@ -180,8 +260,10 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
     routes: [
       {
         name: 'Route 1',
-        load: () => {
-          const mapLayout = [
+        load: ({ player }) => {
+          k.setGravity(1600);
+
+          const levelLayout = [
             '                                                                                                   ',
             '                                                                                                   ',
             '                                                                                                   ',
@@ -205,85 +287,101 @@ export const Unotown = (k: KaboomCtx): IMapLevel => {
             '{=[================================================================================================}'
           ];
 
-          const map = k.addLevel(mapLayout, {
+          const level = k.addLevel(levelLayout, {
             ...definitions()
           });
 
-          const npc = k.add([
-            k.sprite('npc'),
-            k.pos(map.getPos(41, 11.4)),
-            k.origin('center'),
-            k.area({
-              offset: k.vec2(0, 1),
-              scale: k.vec2(0.25, 0.25)
-            }),
-            {
-              damageRadius: 24
-            }
-          ]);
+          level.spawnPoint = k.vec2(8, 13.4);
 
-          npc.onUpdate(() => {
-            // if player is on the same y axis as the npc and is within 32px of the npc damage the player and knock them back out of the radius
-            const player = k.get('player').shift() as unknown as BodyComp &
-              PosComp &
-              HealthComp &
-              GameObj;
-            if (player && player.pos) {
-              const instance = player.instance as unknown as Character;
+          const { Camera } = Components(k);
 
-              if (player.pos.y > npc.pos.y && player.pos.dist(npc.pos) <= npc.damageRadius) {
-                // make npc turn to face player
-                const direction: ICharacterDirectionEnum =
-                  player.pos.x > npc.pos.x
-                    ? ICharacterDirectionEnum.RIGHT
-                    : ICharacterDirectionEnum.LEFT;
+          player.init(level);
 
-                //  jump up and down
-                npc.play('jump-' + direction);
+          const ui = new UI(k, player);
 
-                npc.pos.y -= 2;
-                k.wait(0.3, () => {
-                  npc.pos.y += 2;
-                  npc.play('idle-' + direction);
-                });
-
-                k.wait(1.5, () => {
-                  npc.play('idle-' + ICharacterDirectionEnum.DOWN);
-                });
-
-                // make player flash opacity
-                instance.lockMovements();
-
-                player.use(k.opacity(0.5));
-                k.wait(0.1, () => {
-                  player.use(k.opacity(1));
-                });
-                k.wait(0.15, () => {
-                  player.use(k.opacity(0.5));
-                });
-                k.wait(0.2, () => {
-                  player.use(k.opacity(1));
-                });
-                k.wait(0.25, () => {
-                  player.use(k.opacity(0.5));
-                });
-                k.wait(0.3, () => {
-                  player.use(k.opacity(1));
-                  instance.unlockMovements();
-                });
-
-                player.hurt(1);
-
-                // knock back in the opposite direction of the npc
-                player.pos.x = Math.ceil(
-                  player.pos.x +
-                    (npc.pos.x > player.pos.x ? -npc.damageRadius : npc.damageRadius) * 1.05
-                );
-              }
-            }
+          ui.init({
+            ...level,
+            spawnPoint: k.vec2(0, 0)
           });
 
-          return map;
+          const cameraTarget = level.spawn(
+            [
+              'camera-target',
+              k.rect(16, 16),
+              k.area(),
+              k.anchor('center'),
+              k.color(75, 180, 255),
+              k.opacity(0)
+            ],
+            level.spawnPoint
+          );
+
+          if (player.object) {
+            cameraTarget.use(Camera.smoothFollow(player.object));
+          }
+
+          const sam = new Character(k, {
+            name: 'Sam',
+            tag: 'npc'
+          });
+
+          sam.init({
+            ...level,
+            spawnPoint: k.vec2(41, level.spawnPoint.y)
+          });
+
+          sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
+
+          if (sam.object) {
+            sam.object.use({
+              damageRadius: 16
+            } as Comp);
+
+            const levelPos = sam.object.pos;
+
+            sam.object.onUpdate(() => {
+              const npc = sam.object;
+
+              // if player is on the same y axis as the npc and is within 32px of the npc damage the player and knock them back out of the radius
+              if (player.object && npc) {
+                const playerObj = player.object;
+
+                if (
+                  playerObj.pos.y > npc.pos.y &&
+                  playerObj.pos.dist(npc.pos) <= npc.damageRadius
+                ) {
+                  // make npc turn to face player
+                  const direction: ICharacterDirectionEnum =
+                    playerObj.pos.x > npc.pos.x
+                      ? ICharacterDirectionEnum.RIGHT
+                      : ICharacterDirectionEnum.LEFT;
+
+                  //  jump up and down
+                  sam.jump();
+
+                  k.wait(0.3, () => {
+                    npc.pos.y += 2;
+                    sam.setFacingDirection(direction);
+                  });
+
+                  k.wait(1.5, () => {
+                    sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
+                    npc.pos = levelPos;
+                  });
+
+                  playerObj.hurt(1);
+
+                  // knock back in the opposite direction of the npc
+                  playerObj.pos.x = Math.ceil(
+                    playerObj.pos.x +
+                      (npc.pos.x > playerObj.pos.x ? -npc.damageRadius : npc.damageRadius) * 2
+                  );
+                }
+              }
+            });
+          }
+
+          return level;
         }
       }
     ]

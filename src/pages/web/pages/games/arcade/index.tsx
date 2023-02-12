@@ -5,14 +5,9 @@ import { useGame } from '../../../../../context/game';
 import { useUser } from '../../../../../context/user';
 import { IItem } from '../../../../../models/item';
 import { IGameData } from '../../../../../utils/game';
-import {
-  Character,
-  ICharacterColorEnum,
-  ICharacterDirectionEnum
-} from './kaboom/classes/character';
-import { UI } from './kaboom/classes/ui';
-import { Components } from './kaboom/components';
+import { Character } from './kaboom/classes/character';
 import { GameMaps } from './kaboom/levels';
+import { IKaboomCtxExt } from './kaboom/shared/types';
 
 enum IGameStateEnum {
   STARTING = 'starting',
@@ -56,15 +51,20 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      delete kaboomRef.current;
+      kaboomRef.current.destroy();
       setGameState(IGameStateEnum.STARTING);
     };
 
     window.addEventListener('resize', onResize);
 
     return () => {
-      if (kaboomRef.current) {
-        kaboomRef.current.destroy();
+      try {
+        if (kaboomRef.current) {
+          console.log('destroying kaboom', kaboomRef.current);
+          kaboomRef.current.destroy();
+        }
+      } catch (err) {
+        console.log('error destroying kaboom', err);
       }
 
       window.removeEventListener('resize', onResize);
@@ -82,16 +82,32 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       global: false,
       canvas: canvas,
       scale: 4,
-      font: 'sinko',
+      font: 'minecraft',
       crisp: true,
       debug: true
-    });
+    }) as IKaboomCtxExt;
 
     const k = kaboomRef.current;
-    const comp = Components(k);
-    const maps = {
+
+    const layerProps = [k.fixed(), k.z(0)];
+
+    k.layers = {
+      skyBox: [...layerProps, 'skyBox', k.pos(0, 0), k.fixed()],
+      clouds: [...layerProps, 'layer:clouds', k.z(1)],
+      bg: [...layerProps, 'layer:bg', k.z(2)],
+      platforms: new Array(3)
+        .fill(0)
+        .map((x, i) => [...layerProps, `layer:platform-${i}`, k.z(3 + i)]),
+      player: [...layerProps, 'layer:player', k.z(6)]
+    };
+
+    const levels = {
       unotown: GameMaps.Unotown(k)
     };
+
+    Character.generateSprites(k);
+
+    k.loadFont('minecraft', '/fonts/minecraft.ttf');
 
     k.loadSound('jump', '/sounds/jump.mp3');
 
@@ -120,35 +136,35 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       }
     });
 
-    const skybox = [
-      k.rect(k.width(), k.height()),
-      k.pos(k.width(), k.height()),
-      k.origin('botright'),
-      k.color(127, 200, 255),
-      k.layer('sky'),
-      k.fixed()
-    ];
-
-    const player = new Character(k, ICharacterColorEnum.YELLOW, outfit);
-
-    const ui = new UI(k, player);
-
-    setPlayer(player);
-
     let bgmAudio: any;
 
     k.scene('game-over', () => {
-      bgmAudio?.stop();
+      if (bgmAudio) bgmAudio.paused = true;
       bgmAudio = k.play('game-over-bgm');
 
-      k.add(skybox);
+      const skyBox = k.add([
+        ...layerProps,
+        k.anchor('topleft'),
+        k.rect(k.width(), k.height()),
+        k.color(127, 200, 255)
+      ]);
 
-      k.add([k.text('Game Over', 32), k.pos(k.width() / 2, k.height() / 2), k.origin('center')]);
+      const ui = k.add([...layerProps, 'layer:ui', k.pos(0, 0), k.anchor('topleft'), k.z(1)]);
 
-      k.add([
-        k.text('Click to restart', 16),
+      ui.add([
+        k.text('Game Over', {
+          size: 16
+        }),
+        k.pos(k.width() / 2, k.height() / 2),
+        k.anchor('center')
+      ]);
+
+      ui.add([
+        k.text('Click to restart', {
+          size: 16
+        }),
         k.pos(k.width() / 2, k.height() / 2 + 32),
-        k.origin('center')
+        k.anchor('center')
       ]);
 
       k.onClick(() => {
@@ -162,111 +178,35 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       k.onTouchStart(() => {
         k.go('game');
       });
+
+      k.onGamepadButtonPress('start', () => {
+        k.go('game');
+      });
     });
 
     k.scene('game', () => {
-      const layers = [
-        'sky',
-        'clouds',
-        'bg',
-        ...new Array(3)
-          .fill(0)
-          .map((x, i) => `platform-${i}`)
-          .reverse(),
-        'game',
-        'ui'
-      ];
+      k.onGamepadButtonPress('select', () => {
+        // reload page
+        window.location.reload();
+      });
 
-      console.log({ layers });
+      const player = new Character(k, { tag: 'player', isNPC: false, outfit: outfit });
 
-      k.layers(layers, 'game');
+      setPlayer(player);
 
-      bgmAudio?.stop();
+      if (bgmAudio) bgmAudio.paused = true;
 
       bgmAudio = k.play('bgm');
 
-      console.log('game');
-
-      k.add(skybox);
-
-      const map = maps.unotown.routes[0].load();
-
-      player.load([
-        'player',
-        k.health(player.maxHealth),
-        k.sprite('player'),
-        k.pos(map.getPos(38, 11)),
-        k.origin('center'),
-        k.area({
-          offset: k.vec2(0, 1),
-          scale: k.vec2(0.25, 0.25)
-        }),
-        k.body()
-      ]);
-
-      ui.load([
-        'ui',
-        k.pos(0, 0),
-        k.origin('topleft'),
-        k.layer('bg'),
-        k.fixed(),
+      const skyBox = k.add([
+        ...layerProps,
+        k.anchor('topleft'),
         k.rect(k.width(), k.height()),
-        k.opacity(0)
+        k.color(127, 200, 255)
       ]);
 
-      const { Camera } = comp;
-
-      const cameraTarget = k.add([
-        k.rect(16, 16),
-        k.area(),
-        k.pos(player.object.pos),
-        k.origin('center'),
-        k.color(75, 180, 255),
-        k.opacity(0),
-        Camera.smoothFollow(player.object),
-        'camera-target'
-      ]);
-
-      k.onKeyPress('space', () => {
-        player.jump();
-      });
-
-      // player movement WASD
-      k.onKeyDown('w', () => {
-        player.walk(ICharacterDirectionEnum.UP);
-      });
-
-      k.onKeyDown('a', () => {
-        player.walk(ICharacterDirectionEnum.LEFT);
-      });
-
-      k.onKeyDown('s', () => {
-        player.walk(ICharacterDirectionEnum.DOWN);
-      });
-
-      k.onKeyDown('d', () => {
-        player.walk(ICharacterDirectionEnum.RIGHT);
-      });
-
-      k.onKeyPress(['a', 'd', 'w', 's'], () => {
-        player.object.play(`walk-${player.facingDirection}`);
-      });
-
-      k.onKeyRelease(['a', 'd', 'w', 's'], () => {
-        player.object.play(`idle-${player.facingDirection}`);
-        player.stopWalking();
-      });
-
-      k.onKeyPress('shift', () => {
-        player.isSprinting = true;
-      });
-
-      k.onKeyRelease('shift', () => {
-        player.isSprinting = false;
-      });
-
-      k.onUpdate('block', (b: any) => {
-        b.solid = b.pos.dist(player.object.pos) <= 8;
+      k.level = levels.unotown.routes[0].load({
+        player: player
       });
 
       setGameState(IGameStateEnum.PLAYING);
@@ -295,11 +235,19 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
     }
   };
 
+  const k = kaboomRef.current;
+
+  if (k) {
+    k.onTouchStart(tap);
+    k.onKeyPress('space', tap);
+    k.onGamepadButtonPress('start', tap);
+  }
+
   const HUD =
     gameState == IGameStateEnum.STARTING ? (
       <div className="absolute inset-0 bg-gray-700 z-20">
         <div className="w-full h-full flex flex-wrap justify-center items-center overflow-auto pb-4">
-          <div className="w-full md:w-1/4 max-w-[80vw]">
+          <div className="w-full xl:w-1/4 max-w-[80vw]">
             <div className="w-full p-4 flex justify-center lg:text-2xl font-black">
               TAPGATE ADVENTURE PARADISE
             </div>

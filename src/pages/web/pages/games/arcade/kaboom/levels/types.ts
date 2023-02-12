@@ -1,8 +1,10 @@
-import { KaboomCtx, Level } from 'kaboom';
+import { GameObj } from 'kaboom';
+import { Character } from '../classes/character';
+import { IKaboomCtxExt } from '../shared/types';
 
 export interface IMapLevelRoutes {
   name: string;
-  load: () => Level;
+  load: ({ player }: { player: Character }) => GameObj;
 }
 
 export interface IMapLevel {
@@ -15,5 +17,5 @@ export interface IMapLevels {
 }
 
 export interface IGameMap {
-  [key: string]: (k: KaboomCtx) => IMapLevel;
+  [key: string]: (k: IKaboomCtxExt) => IMapLevel;
 }

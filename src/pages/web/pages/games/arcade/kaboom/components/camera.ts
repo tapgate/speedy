@@ -9,7 +9,7 @@ const KCamera = (k: KaboomCtx) => {
       return {
         update() {
           const cameraTarget = this as any;
-          const player = k.get('player').shift();
+          const player = target;
 
           if (player) {
             const facingDirection = player.facingDirection;
