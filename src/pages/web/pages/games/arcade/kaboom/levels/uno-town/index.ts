@@ -1,12 +1,31 @@
-import { Comp, LevelOpt } from 'kaboom';
+import { AreaComp, Comp, GameObj, LevelOpt } from 'kaboom';
+import { toast } from 'react-toastify';
 import { Character, ICharacterDirectionEnum } from '../../classes/character';
 import { UI } from '../../classes/ui';
 import { Components } from '../../components';
+import Sign from '../../components/sign';
 import { mapTile } from '../../constants';
+import { dialogOpts } from '../../shared/dialog';
 import { IKaboomCtxExt } from '../../shared/types';
 import { IMapLevel } from '../types';
 
 export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
+  k.loadSpriteAtlas('images/props.png', {
+    props: {
+      x: 0,
+      y: 0,
+      height: 128,
+      width: 128,
+      sliceX: 8,
+      sliceY: 8
+    },
+    'props/sign': {
+      ...mapTile,
+      x: 0,
+      y: 0
+    }
+  });
+
   k.loadSpriteAtlas('images/map/001.png', {
     map001: {
       x: 0,
@@ -105,44 +124,132 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
       ...mapTile,
       x: 32,
       y: 64
+    },
+    'maps/001/door-top-left': {
+      ...mapTile,
+      x: 64,
+      y: 0
+    },
+    'maps/001/door-top-center': {
+      ...mapTile,
+      x: 80,
+      y: 0
+    },
+    'maps/001/door-top-right': {
+      ...mapTile,
+      x: 96,
+      y: 0
+    },
+    'maps/001/door-bottom-left': {
+      ...mapTile,
+      x: 64,
+      y: 16
+    },
+    'maps/001/door-bottom-center': {
+      ...mapTile,
+      x: 80,
+      y: 16
+    },
+    'maps/001/door-bottom-right': {
+      ...mapTile,
+      x: 96,
+      y: 16
     }
   });
 
-  type PlatformFloorComp = {
-    update: () => void;
-  };
+  const platform = (tag?: string) => {
+    return {
+      add: (p: GameObj & AreaComp) => {
+        console.log(p);
 
-  const playerMadeSolid = (s: any, player: any): boolean => {
-    if (player && player.pos) {
-      return s.pos.dist(player.pos) <= 32;
-    }
+        p.use('platform');
 
-    return false;
+        if (tag) {
+          p.use(tag);
+        }
+
+        p.onHover(() => {
+          console.log(p);
+          // add an outline
+          p.use(k.outline(4));
+        });
+
+        p.onHoverEnd(() => {
+          p.unuse('outline');
+        });
+      }
+    };
   };
 
   const definitions = (): LevelOpt => ({
     tileWidth: 16,
     tileHeight: 16,
     tiles: {
-      '⌜': () => [k.sprite('maps/001/ground-tl'), k.area(), k.body({ isStatic: true })],
-      '―': () => [k.sprite('maps/001/ground-tc'), k.area(), k.body({ isStatic: true })],
-      '⌝': () => [k.sprite('maps/001/ground-tr'), k.area(), k.body({ isStatic: true })],
-      '(': () => [k.sprite('maps/001/ground-tl'), k.area(), k.body({ isStatic: true })],
-      '#': () => [k.sprite('maps/001/ground-tc'), k.area(), k.body({ isStatic: true })],
-      ')': () => [k.sprite('maps/001/ground-tr'), k.area(), k.body({ isStatic: true })],
-      '[': () => [k.sprite('maps/001/ground-ml'), k.area(), k.body({ isStatic: true })],
+      '⌜': () => [
+        platform('soft'),
+        k.sprite('maps/001/ground-tl'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '―': () => [
+        platform('soft'),
+        k.sprite('maps/001/ground-tc'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '⌝': () => [
+        platform('soft'),
+        k.sprite('maps/001/ground-tr'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '(': () => [platform(), k.sprite('maps/001/ground-tl'), k.area(), k.body({ isStatic: true })],
+      '#': () => [platform(), k.sprite('maps/001/ground-tc'), k.area(), k.body({ isStatic: true })],
+      ')': () => [platform(), k.sprite('maps/001/ground-tr'), k.area(), k.body({ isStatic: true })],
+      '[': () => [platform(), k.sprite('maps/001/ground-ml'), k.area(), k.body({ isStatic: true })],
       '@': () => [k.sprite('maps/001/ground-mc')],
-      ']': () => [k.sprite('maps/001/ground-mr'), k.area(), k.body({ isStatic: true })],
+      d: () => [k.sprite('maps/001/door-top-left')],
+      f: () => [k.sprite('maps/001/door-top-center')],
+      g: () => [k.sprite('maps/001/door-top-right')],
+      c: () => [k.sprite('maps/001/door-bottom-left')],
+      v: () => [k.sprite('maps/001/door-bottom-center')],
+      b: () => [k.sprite('maps/001/door-bottom-right')],
+      ']': () => [platform(), k.sprite('maps/001/ground-mr'), k.area(), k.body({ isStatic: true })],
       '!': () => [k.sprite('maps/001/ground-ml')],
       '|': () => [k.sprite('maps/001/ground-mr')],
-      '{': () => [k.sprite('maps/001/ground-bl'), k.area(), k.body({ isStatic: true })],
+      '{': () => [platform(), k.sprite('maps/001/ground-bl'), k.area(), k.body({ isStatic: true })],
       '=': () => [k.sprite('maps/001/ground-bc')],
-      '}': () => [k.sprite('maps/001/ground-br'), k.area(), k.body({ isStatic: true })],
-      '+': () => [k.sprite('maps/001/ground-sm-t'), k.area(), k.body({ isStatic: true })],
-      '-': () => [k.sprite('maps/001/ground-sm-m'), k.area(), k.body({ isStatic: true })],
-      '*': () => [k.sprite('maps/001/ground-sm-b'), k.area(), k.body({ isStatic: true })],
-      '/': () => [k.sprite('maps/001/ground-tl-ground'), k.area(), k.body({ isStatic: true })],
-      '\\': () => [k.sprite('maps/001/ground-tr-ground'), k.area(), k.body({ isStatic: true })]
+      '}': () => [platform(), k.sprite('maps/001/ground-br'), k.area(), k.body({ isStatic: true })],
+      '+': () => [
+        platform(),
+        k.sprite('maps/001/ground-sm-t'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '-': () => [
+        platform(),
+        k.sprite('maps/001/ground-sm-m'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '*': () => [
+        platform(),
+        k.sprite('maps/001/ground-sm-b'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '/': () => [
+        platform(),
+        k.sprite('maps/001/ground-tl-ground'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '\\': () => [
+        platform(),
+        k.sprite('maps/001/ground-tr-ground'),
+        k.area(),
+        k.body({ isStatic: true })
+      ]
     }
   });
 
@@ -161,12 +268,12 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
             '                                                                                                   ',
             '                                                                                                   ',
             '                                                                                                   ',
-            '⌜―――⌝                                                                                              ',
+            '(###)                                                                                              ',
             '[@@@]                                                                                              ',
-            '[@@@]                                                                                              ',
-            '[@@@]                                  (##)                                                        ',
-            '[@@@]                                  !@@|                                                        ',
-            '[@@@]                                  !@@|                                                        ',
+            '[@@@]                                  ⌜―――――⌝                                                      ',
+            '[@@@]                                  !@@@@@|                                                     ',
+            '[@@@]                                  !@dfg@|                                                     ',
+            '[@@@]                                  !@cvb@|                                                     ',
             '[@(###############################################################################################)',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
@@ -211,6 +318,14 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
             cameraTarget.use(Camera.smoothFollow(player.object));
           }
 
+          level.spawn(
+            Sign(k, {
+              message: 'Nothing to see here. Hop along now.',
+              player
+            }),
+            k.vec2(37.75, level.spawnPoint.y - 2.4)
+          );
+
           const sam = new Character(k, {
             name: 'Sam',
             tag: 'npc'
@@ -218,14 +333,14 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
 
           sam.init({
             ...level,
-            spawnPoint: k.vec2(41, level.spawnPoint.y)
+            spawnPoint: k.vec2(42.5, 13.4)
           });
 
           sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
 
           if (sam.object) {
             sam.object.use({
-              damageRadius: 16
+              damageRadius: 20
             } as Comp);
 
             const levelPos = sam.object.pos;
@@ -241,32 +356,93 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
                   playerObj.pos.y > npc.pos.y &&
                   playerObj.pos.dist(npc.pos) <= npc.damageRadius
                 ) {
+                  player.lockMovements();
+
                   // make npc turn to face player
                   const direction: ICharacterDirectionEnum =
                     playerObj.pos.x > npc.pos.x
                       ? ICharacterDirectionEnum.RIGHT
                       : ICharacterDirectionEnum.LEFT;
 
-                  //  jump up and down
-                  sam.jump();
+                  let waitTime = 0.5;
 
-                  k.wait(0.3, () => {
-                    npc.pos.y += 2;
-                    sam.setFacingDirection(direction);
-                  });
+                  sam.jump(0.5);
 
-                  k.wait(1.5, () => {
-                    sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
-                    npc.pos = levelPos;
-                  });
+                  waitTime += 0.5;
 
-                  playerObj.hurt(1);
+                  sam.setFacingDirection(direction);
 
                   // knock back in the opposite direction of the npc
                   playerObj.pos.x = Math.ceil(
                     playerObj.pos.x +
-                      (npc.pos.x > playerObj.pos.x ? -npc.damageRadius : npc.damageRadius) * 2
+                      (npc.pos.x > playerObj.pos.x ? -npc.damageRadius : npc.damageRadius) / 2
                   );
+
+                  const done = () => {
+                    sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
+                    npc.pos = levelPos;
+                    player.unlockMovements();
+                    toast.dismiss(messageShown);
+                  };
+
+                  const wordsPerSecond = 10;
+                  const charactersPerWord = 4.7;
+                  const charTimer = (charactersPerWord * wordsPerSecond) / 1000;
+
+                  const messages = [
+                    `Hey! Watch it!`,
+                    `Didn't you see the sign?`,
+                    `You're not supposed to be here!`,
+                    `This leads to Kah-nah-da...`,
+                    `A treacherous place....`,
+                    `Filled with danger and Mooserats!`,
+                    `Now hop along before you get hurt!`
+                  ];
+
+                  const messageShown = toast(``, {
+                    ...dialogOpts,
+                    toastId: 'sam:dialogue'
+                  });
+
+                  let previousMessage = '';
+
+                  const nextLine = () => {
+                    const message = messages.shift();
+
+                    if (messageShown && message) {
+                      const addCharacter = (i: number) => {
+                        const renderMessage = message.substring(0, i);
+
+                        toast.update(messageShown, {
+                          // render: previousMessage + renderMessage
+                          render: renderMessage
+                        });
+
+                        k.wait(charTimer, () => {
+                          if (i < message.length) {
+                            addCharacter(i + 1);
+                          }
+                        });
+
+                        if (i === message.length) {
+                          previousMessage += `\n${message}\n`;
+
+                          // on average people read around 150 words per minute
+                          // 150 words / 60 seconds = 2.5 words per second
+                          // on average there are 4.7 characters per word
+                          // since we spent some time writing this dialogue we can wait around 25% shorter than the average time it would take to read it
+                          const lineTimer = (message.length / charactersPerWord) * 0.25;
+                          k.wait(lineTimer, nextLine);
+                        }
+                      };
+
+                      addCharacter(1);
+                    } else {
+                      done();
+                    }
+                  };
+
+                  k.wait(waitTime, nextLine);
                 }
               }
             });

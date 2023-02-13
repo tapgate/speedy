@@ -1,4 +1,13 @@
-import { KaboomCtx, GameObj, SpriteComp, SpriteAtlasData, Key, GamepadButton, Vec2 } from 'kaboom';
+import {
+  KaboomCtx,
+  GameObj,
+  SpriteComp,
+  SpriteAtlasData,
+  Key,
+  GamepadButton,
+  Vec2,
+  Collision
+} from 'kaboom';
 import { IItem } from '../../../../../../../models/item';
 import { IKaboomCtxExt } from '../shared/types';
 import { GameObject } from './_object';
@@ -204,18 +213,21 @@ export class Character extends GameObject {
       k.sprite('character/outline'),
       k.anchor('bot'),
       k.area({
-        collisionIgnore: ['character', 'npc', 'player'],
+        collisionIgnore: ['character', 'npc'],
         scale: k.vec2(0.4, 0.32),
         offset: k.vec2(0, -68.43)
       }),
       k.body({
+        maxVelocity: 400,
+        jumpForce: 700,
+        mass: 0.01,
         isStatic: isNPC
       }),
       k.state(
         'idle',
         ['idle', 'walking', 'sprinting', 'jumping', 'falling', 'attacking', 'hurt', 'dead'],
         {
-          idle: ['walking', 'jumping', 'falling', 'attacking', 'hurt', 'dead'],
+          idle: ['walking', 'sprinting', 'jumping', 'falling', 'attacking', 'hurt', 'dead'],
           walking: ['idle', 'sprinting', 'attack', 'jumping', 'falling', 'hurt', 'dead'],
           sprinting: ['idle', 'walking', 'jumping', 'falling', 'hurt', 'dead'],
           jumping: ['idle', 'walking', 'hurt', 'dead'],
@@ -425,7 +437,7 @@ export class Character extends GameObject {
     const k = this.k;
     const body = this.object;
 
-    if (body) {
+    if (body && this.canMove) {
       if (!direction) {
         direction = this._walkingDirection;
       }
@@ -460,6 +472,10 @@ export class Character extends GameObject {
           body.pos.x = k.lerp(body.pos.x, body.pos.x + speed, 0.1);
           break;
       }
+    } else if (body) {
+      if (body.state === 'walking' || body.state === 'sprinting') {
+        this.enterState('idle');
+      }
     }
   }
 
@@ -491,6 +507,16 @@ export class Character extends GameObject {
       k.setCursor('default');
       body.use(k.opacity(1));
       this._outlineSprite?.use(k.opacity(1));
+    });
+
+    body.onBeforePhysicsResolve((collision: Collision) => {
+      if (
+        collision.target.is(['platform', 'soft']) &&
+        body.isJumping() &&
+        body.pos.y > collision.target.pos.y
+      ) {
+        collision.preventResolution();
+      }
     });
 
     body.onGround(() => {
@@ -769,7 +795,7 @@ export class Character extends GameObject {
     return body;
   }
 
-  jump() {
+  jump(jumpHeight?: number) {
     const k = this.k;
     const body = this.object;
     if (body) {
@@ -785,7 +811,7 @@ export class Character extends GameObject {
             k.play('jump');
           }
 
-          body.jump(this.jumpHeight * 350);
+          body.jump(jumpHeight ?? this.jumpHeight * 400);
           this.enterState('jumping');
         }
       }

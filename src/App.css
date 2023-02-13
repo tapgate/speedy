@@ -121,3 +121,11 @@
       max-height: 100vw;
     }
   }
+
+  /* create minecraft font family */
+  @font-face {
+    font-family: 'Minecraft';
+    src: url('../public/fonts/minecraft.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
