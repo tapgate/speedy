@@ -19,10 +19,6 @@ export class GameObject {
   }
 
   init(level: GameObj<any>): GameObj {
-    console.log({
-      level,
-      compList: this._compList
-    });
     this._object = level.spawn(this._compList, level.spawnPoint);
     return this._object!;
   }

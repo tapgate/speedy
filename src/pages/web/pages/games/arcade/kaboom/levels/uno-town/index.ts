@@ -1,11 +1,10 @@
-import { AreaComp, Comp, GameObj, LevelOpt } from 'kaboom';
-import { toast } from 'react-toastify';
-import { Character, ICharacterDirectionEnum } from '../../classes/character';
+import { AreaComp, GameObj, LevelOpt } from 'kaboom';
+import { ICharacterDirectionEnum } from '../../classes/character';
+import { NPC } from '../../classes/npc';
 import { UI } from '../../classes/ui';
 import { Components } from '../../components';
 import Sign from '../../components/sign';
 import { mapTile } from '../../constants';
-import { dialogOpts } from '../../shared/dialog';
 import { IKaboomCtxExt } from '../../shared/types';
 import { IMapLevel } from '../types';
 
@@ -115,12 +114,12 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
       x: 48,
       y: 48
     },
-    'maps/001/ground-tl-ground': {
+    'maps/001/ground-ground-tl': {
       ...mapTile,
       x: 0,
       y: 64
     },
-    'maps/001/ground-tr-ground': {
+    'maps/001/ground-ground-tr': {
       ...mapTile,
       x: 32,
       y: 64
@@ -160,8 +159,6 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
   const platform = (tag?: string) => {
     return {
       add: (p: GameObj & AreaComp) => {
-        console.log(p);
-
         p.use('platform');
 
         if (tag) {
@@ -169,7 +166,6 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
         }
 
         p.onHover(() => {
-          console.log(p);
           // add an outline
           p.use(k.outline(4));
         });
@@ -206,6 +202,18 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
       '(': () => [platform(), k.sprite('maps/001/ground-tl'), k.area(), k.body({ isStatic: true })],
       '#': () => [platform(), k.sprite('maps/001/ground-tc'), k.area(), k.body({ isStatic: true })],
       ')': () => [platform(), k.sprite('maps/001/ground-tr'), k.area(), k.body({ isStatic: true })],
+      '≤': () => [
+        platform(),
+        k.sprite('maps/001/ground-ground-tl'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
+      '≥': () => [
+        platform(),
+        k.sprite('maps/001/ground-ground-tr'),
+        k.area(),
+        k.body({ isStatic: true })
+      ],
       '[': () => [platform(), k.sprite('maps/001/ground-ml'), k.area(), k.body({ isStatic: true })],
       '@': () => [k.sprite('maps/001/ground-mc')],
       d: () => [k.sprite('maps/001/door-top-left')],
@@ -270,11 +278,11 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
             '                                                                                                   ',
             '(###)                                                                                              ',
             '[@@@]                                                                                              ',
-            '[@@@]                                  ⌜―――――⌝                                                      ',
+            '[@@@]                                  ⌜―――――⌝                                                     ',
             '[@@@]                                  !@@@@@|                                                     ',
             '[@@@]                                  !@dfg@|                                                     ',
             '[@@@]                                  !@cvb@|                                                     ',
-            '[@(###############################################################################################)',
+            '[@≤###############################################################################################)',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
             '[@[@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]',
@@ -291,105 +299,72 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
 
           level.spawnPoint = k.vec2(8, 13.4);
 
-          const { Camera } = Components(k);
+          const load = () => {
+            const { Camera } = Components(k);
 
-          player.init(level);
+            player.init(level);
 
-          const ui = new UI(k, player);
+            const ui = new UI(k, player);
 
-          ui.init({
-            ...level,
-            spawnPoint: k.vec2(0, 0)
-          });
+            ui.init({
+              ...level,
+              spawnPoint: k.vec2(0, 0)
+            });
 
-          const cameraTarget = level.spawn(
-            [
-              'camera-target',
-              k.rect(16, 16),
-              k.area(),
-              k.anchor('center'),
-              k.color(75, 180, 255),
-              k.opacity(0)
-            ],
-            level.spawnPoint
-          );
+            const cameraTarget = level.spawn(
+              [
+                'camera-target',
+                k.rect(16, 16),
+                k.area(),
+                k.anchor('center'),
+                k.color(75, 180, 255),
+                k.opacity(0)
+              ],
+              level.spawnPoint
+            );
 
-          if (player.object) {
-            cameraTarget.use(Camera.smoothFollow(player.object));
-          }
+            if (player.object) {
+              cameraTarget.use(Camera.smoothFollow(player.object));
+            }
 
-          level.spawn(
-            Sign(k, {
-              message: 'Nothing to see here. Hop along now.',
-              player
-            }),
-            k.vec2(37.75, level.spawnPoint.y - 2.4)
-          );
+            level.spawn(
+              Sign(k, {
+                message: 'Nothing to see here. Hop along now.',
+                player
+              }),
+              k.vec2(37.75, level.spawnPoint.y - 2.4)
+            );
 
-          const sam = new Character(k, {
-            name: 'Sam',
-            tag: 'npc'
-          });
+            const sam = new NPC(k, {
+              name: 'Sam',
+              tag: 'npc',
+              isBlocking: true
+            });
 
-          sam.init({
-            ...level,
-            spawnPoint: k.vec2(42.5, 13.4)
-          });
+            sam.init({
+              ...level,
+              spawnPoint: k.vec2(42.5, 13.4)
+            });
 
-          sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
+            sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
 
-          if (sam.object) {
-            sam.object.use({
-              damageRadius: 20
-            } as Comp);
+            if (sam.object) {
+              const levelPos = sam.object.pos;
 
-            const levelPos = sam.object.pos;
-
-            sam.object.onUpdate(() => {
-              const npc = sam.object;
-
-              // if player is on the same y axis as the npc and is within 32px of the npc damage the player and knock them back out of the radius
-              if (player.object && npc) {
+              sam.object.onUpdate(() => {
+                const npc = sam.object;
                 const playerObj = player.object;
 
-                if (
-                  playerObj.pos.y > npc.pos.y &&
-                  playerObj.pos.dist(npc.pos) <= npc.damageRadius
-                ) {
-                  player.lockMovements();
+                // if player is on the same y axis as the npc and is within 32px of the npc damage the player and knock them back out of the radius
+                if (playerObj && npc) {
+                  // sam.lookAt(playerObj);
+                }
+              });
 
-                  // make npc turn to face player
-                  const direction: ICharacterDirectionEnum =
-                    playerObj.pos.x > npc.pos.x
-                      ? ICharacterDirectionEnum.RIGHT
-                      : ICharacterDirectionEnum.LEFT;
-
-                  let waitTime = 0.5;
-
-                  sam.jump(0.5);
-
-                  waitTime += 0.5;
-
-                  sam.setFacingDirection(direction);
-
-                  // knock back in the opposite direction of the npc
-                  playerObj.pos.x = Math.ceil(
-                    playerObj.pos.x +
-                      (npc.pos.x > playerObj.pos.x ? -npc.damageRadius : npc.damageRadius) / 2
-                  );
-
-                  const done = () => {
-                    sam.setFacingDirection(ICharacterDirectionEnum.DOWN);
-                    npc.pos = levelPos;
-                    player.unlockMovements();
-                    toast.dismiss(messageShown);
-                  };
-
-                  const wordsPerSecond = 10;
-                  const charactersPerWord = 4.7;
-                  const charTimer = (charactersPerWord * wordsPerSecond) / 1000;
-
-                  const messages = [
+              sam.onInteract((player) => {
+                sam.openDialogue({
+                  target: player,
+                  messages: [
                     `Hey! Watch it!`,
                     `Didn't you see the sign?`,
                     `You're not supposed to be here!`,
@@ -397,56 +372,13 @@ export const Unotown = (k: IKaboomCtxExt): IMapLevel => {
                     `A treacherous place....`,
                     `Filled with danger and Mooserats!`,
                     `Now hop along before you get hurt!`
-                  ];
+                  ]
+                });
+              });
+            }
+          };
 
-                  const messageShown = toast(``, {
-                    ...dialogOpts,
-                    toastId: 'sam:dialogue'
-                  });
-
-                  let previousMessage = '';
-
-                  const nextLine = () => {
-                    const message = messages.shift();
-
-                    if (messageShown && message) {
-                      const addCharacter = (i: number) => {
-                        const renderMessage = message.substring(0, i);
-
-                        toast.update(messageShown, {
-                          // render: previousMessage + renderMessage
-                          render: renderMessage
-                        });
-
-                        k.wait(charTimer, () => {
-                          if (i < message.length) {
-                            addCharacter(i + 1);
-                          }
-                        });
-
-                        if (i === message.length) {
-                          previousMessage += `\n${message}\n`;
-
-                          // on average people read around 150 words per minute
-                          // 150 words / 60 seconds = 2.5 words per second
-                          // on average there are 4.7 characters per word
-                          // since we spent some time writing this dialogue we can wait around 25% shorter than the average time it would take to read it
-                          const lineTimer = (message.length / charactersPerWord) * 0.25;
-                          k.wait(lineTimer, nextLine);
-                        }
-                      };
-
-                      addCharacter(1);
-                    } else {
-                      done();
-                    }
-                  };
-
-                  k.wait(waitTime, nextLine);
-                }
-              }
-            });
-          }
+          load();
 
           return level;
         }

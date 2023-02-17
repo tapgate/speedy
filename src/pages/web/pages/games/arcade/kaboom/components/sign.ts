@@ -38,15 +38,6 @@ const Sign = (k: KaboomCtx, opts: ISignOpts) => {
           if (playerObj) {
             const facingDirection = player.facingDirection;
 
-            console.log('sign test', [
-              Math.abs(playerObj.pos.x - s.pos.x) < 16 &&
-                Math.abs(playerObj.pos.y - s.pos.y) < 38 &&
-                Math.abs(playerObj.pos.y - s.pos.y) > 35,
-              Math.abs(playerObj.pos.x - s.pos.x),
-              Math.abs(playerObj.pos.y - s.pos.y),
-              facingDirection
-            ]);
-
             const canActivate =
               Math.abs(playerObj.pos.x - s.pos.x) < 16 &&
               Math.abs(playerObj.pos.y - s.pos.y) < 38 &&

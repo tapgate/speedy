@@ -6,7 +6,8 @@ import {
   Key,
   GamepadButton,
   Vec2,
-  Collision
+  Collision,
+  PosComp
 } from 'kaboom';
 import { IItem } from '../../../../../../../models/item';
 import { IKaboomCtxExt } from '../shared/types';
@@ -33,6 +34,7 @@ export interface ICharacterOpts {
   name?: string;
   tag?: string;
   isNPC?: boolean;
+  isBlocking?: boolean;
   maxHealth?: number;
   color?: ICharacterColorEnum;
   outfit?: IItem | null;
@@ -200,8 +202,18 @@ export class Character extends GameObject {
   private _outfitSprite: GameObj<SpriteComp> | undefined;
 
   constructor(k: IKaboomCtxExt, opts?: ICharacterOpts) {
-    const { name, isNPC, maxHealth, color, outfit, speed, sprintSpeed, jumpHeight, jumpSpeed } =
-      opts ?? {};
+    const {
+      name,
+      isNPC,
+      isBlocking,
+      maxHealth,
+      color,
+      outfit,
+      speed,
+      sprintSpeed,
+      jumpHeight,
+      jumpSpeed
+    } = opts ?? {};
 
     let { tag } = opts ?? {};
 
@@ -213,7 +225,7 @@ export class Character extends GameObject {
       k.sprite('character/outline'),
       k.anchor('bot'),
       k.area({
-        collisionIgnore: ['character', 'npc'],
+        collisionIgnore: isNPC ? (!isBlocking ? ['character', 'npc'] : undefined) : undefined,
         scale: k.vec2(0.4, 0.32),
         offset: k.vec2(0, -68.43)
       }),
@@ -488,26 +500,9 @@ export class Character extends GameObject {
 
     const body = this.object!;
 
-    // body.use(k.health(this._maxHealth));
+    body.instance = this;
 
-    // this.play('idle-down');
-
-    // body.onClick(() => {
-    //   this.outlined = true;
-    //   this.log('clicked');
-    // });
-
-    body.onHover(() => {
-      k.setCursor('pointer');
-      body.use(k.opacity(0.5));
-      this._outlineSprite?.use(k.opacity(0.5));
-    });
-
-    body.onHoverEnd(() => {
-      k.setCursor('default');
-      body.use(k.opacity(1));
-      this._outlineSprite?.use(k.opacity(1));
-    });
+    this.log('init', body);
 
     body.onBeforePhysicsResolve((collision: Collision) => {
       if (
@@ -748,8 +743,6 @@ export class Character extends GameObject {
 
       // based on touch drag direction (mobile)
       k.onTouchMove((pos: Vec2, t: Touch) => {
-        console.log('touch move', pos);
-
         if (jumpOnRelease === t.identifier) {
           jumpOnRelease = null;
         }
@@ -759,8 +752,6 @@ export class Character extends GameObject {
 
           const diff = pos.sub(previousTouchPos);
           previousTouchPos = pos;
-
-          console.log('diff', diff);
 
           if (Math.abs(diff.x) > 0.01) {
             if (diff.x > 0) {
@@ -785,7 +776,6 @@ export class Character extends GameObject {
           jumpOnRelease = null;
           this.jump();
         } else {
-          console.log('touch end');
           previousTouchPos = k.vec2(0, 0);
           this.stopWalking();
         }
@@ -853,5 +843,106 @@ export class Character extends GameObject {
     this._canDoubleJump = true;
     this._canClimb = false;
     this._canDesend = false;
+  }
+
+  lookAt(target: GameObj | PosComp) {
+    const body = this.object;
+
+    if (target && body) {
+      // check if character is within 32px of the body and on the same y axis
+      const isNearby =
+        target.pos.x > body.pos.x - 16 &&
+        target.pos.x < body.pos.x + 16 &&
+        target.pos.y > body.pos.y - 16 &&
+        target.pos.y < body.pos.y + 16;
+
+      // set direction of body based on character position
+      if (
+        target.pos.x < body.pos.x &&
+        target.pos.y > body.pos.y - 64 &&
+        target.pos.y < body.pos.y + 64
+      ) {
+        this.setFacingDirection(ICharacterDirectionEnum.LEFT);
+      } else if (
+        target.pos.x > body.pos.x &&
+        target.pos.y > body.pos.y - 64 &&
+        target.pos.y < body.pos.y + 64
+      ) {
+        this.setFacingDirection(ICharacterDirectionEnum.RIGHT);
+      }
+
+      if (
+        target.pos.y < body.pos.y &&
+        target.pos.x > body.pos.x - 16 &&
+        target.pos.x < body.pos.x + 16
+      ) {
+        this.setFacingDirection(ICharacterDirectionEnum.UP);
+      } else if (
+        target.pos.y > body.pos.y &&
+        target.pos.x > body.pos.x - 16 &&
+        target.pos.x < body.pos.x + 16
+      ) {
+        this.setFacingDirection(ICharacterDirectionEnum.DOWN);
+      }
+    }
+  }
+
+  isLookingAt(target: GameObj | PosComp): { x: boolean; y: boolean } {
+    const body = this.object;
+
+    if (target && body) {
+      // check if character is within 32px of the body and on the same y axis
+      const isNearby =
+        target.pos.x > body.pos.x - 16 &&
+        target.pos.x < body.pos.x + 16 &&
+        target.pos.y > body.pos.y - 16 &&
+        target.pos.y < body.pos.y + 16;
+
+      // set direction of body based on character position
+      if (
+        target.pos.x < body.pos.x &&
+        target.pos.y > body.pos.y - 64 &&
+        target.pos.y < body.pos.y + 64
+      ) {
+        return {
+          x: true,
+          y: false
+        };
+      } else if (
+        target.pos.x > body.pos.x &&
+        target.pos.y > body.pos.y - 64 &&
+        target.pos.y < body.pos.y + 64
+      ) {
+        return {
+          x: true,
+          y: false
+        };
+      }
+
+      if (
+        target.pos.y < body.pos.y &&
+        target.pos.x > body.pos.x - 16 &&
+        target.pos.x < body.pos.x + 16
+      ) {
+        return {
+          x: false,
+          y: true
+        };
+      } else if (
+        target.pos.y > body.pos.y &&
+        target.pos.x > body.pos.x - 16 &&
+        target.pos.x < body.pos.x + 16
+      ) {
+        return {
+          x: false,
+          y: true
+        };
+      }
+    }
+
+    return {
+      x: false,
+      y: false
+    };
   }
 }
