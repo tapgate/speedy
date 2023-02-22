@@ -5,16 +5,10 @@ import { useGame } from '../../../../../context/game';
 import { useUser } from '../../../../../context/user';
 import { IItem } from '../../../../../models/item';
 import { IGameData } from '../../../../../utils/game';
-import { Character } from './kaboom/classes/character';
+import { Player } from './kaboom/classes/player';
+import { IGameSceneEnum, IGameStateEnum } from './kaboom/constants';
 import { GameMaps } from './kaboom/levels';
 import { IKaboomCtxExt } from './kaboom/shared/types';
-
-enum IGameStateEnum {
-  STARTING = 'starting',
-  PLAYING = 'playing',
-  PAUSED = 'paused',
-  GAME_OVER = 'game-over'
-}
 
 enum IColorEnum {
   NONE = 'none',
@@ -38,7 +32,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
   const FLOOR_HEIGHT = 32;
   const SPEED = 120;
 
-  const [player, setPlayer] = useState<Character | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [gameState, setGameState] = useState<IGameStateEnum>(IGameStateEnum.STARTING);
 
@@ -120,7 +114,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       unotown: GameMaps.Unotown(k)
     };
 
-    Character.generateSprites(k);
+    Player.generateSprites(k);
 
     k.loadFont('minecraft', '/fonts/minecraft.ttf');
 
@@ -153,7 +147,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
 
     let bgmAudio: any;
 
-    k.scene('game-over', () => {
+    k.scene(IGameSceneEnum.GAME_OVER, () => {
       if (bgmAudio) bgmAudio.paused = true;
       bgmAudio = k.play('game-over-bgm');
 
@@ -183,29 +177,29 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       ]);
 
       k.onClick(() => {
-        k.go('game');
+        k.go(IGameSceneEnum.GAME);
       });
 
       k.onKeyPress('space', () => {
-        k.go('game');
+        k.go(IGameSceneEnum.GAME);
       });
 
       k.onTouchStart(() => {
-        k.go('game');
+        k.go(IGameSceneEnum.GAME);
       });
 
       k.onGamepadButtonPress('start', () => {
-        k.go('game');
+        k.go(IGameSceneEnum.GAME);
       });
     });
 
-    k.scene('game', () => {
+    k.scene(IGameSceneEnum.GAME, () => {
       k.onGamepadButtonPress('select', () => {
         // reload page
         window.location.reload();
       });
 
-      const player = new Character(k, { tag: 'player', isNPC: false, outfit: outfit });
+      const player = new Player(k, { tag: 'player', isNPC: false, outfit: outfit });
 
       setPlayer(player);
 
@@ -239,7 +233,7 @@ export const ArcadeGame = ({ outfit, data, quit }: IArcadeGameProps) => {
       const k = kaboomRef.current;
 
       if (k) {
-        k.go('game');
+        k.go(IGameSceneEnum.GAME);
       }
     }
   };

@@ -3,16 +3,13 @@ import { Id, toast } from 'react-toastify';
 import { dialogOpts } from '../shared/dialog';
 import { IKaboomCtxExt } from '../shared/types';
 import { Character, ICharacterDirectionEnum, ICharacterOpts } from './character';
-import { Mixin } from 'ts-mixer';
-import { EventObject } from './_event_object';
 
 export interface INPCOpts extends ICharacterOpts {
   talkingSpeed?: number;
   interactionDistance?: { x: number; y: number };
 }
 
-export class NPC extends Mixin(Character, EventObject) {
-  private _canInteract = true;
+export class NPC extends Character {
   private _talkingSpeed = 1;
   private _interactionDistance = { x: 22, y: 1 };
 
@@ -29,6 +26,7 @@ export class NPC extends Mixin(Character, EventObject) {
   init(level: GameObj) {
     super.init(level);
     const k = this.k;
+    const body = this.object!;
 
     k.onKeyPress('e', () => {
       const npc = this.object;
@@ -51,7 +49,11 @@ export class NPC extends Mixin(Character, EventObject) {
       }
     });
 
-    return this.object!;
+    this.onOutOfBounds(() => {
+      body.destroy();
+    });
+
+    return body;
   }
 
   openDialogue({
@@ -170,28 +172,6 @@ export class NPC extends Mixin(Character, EventObject) {
       } else {
         nextLine();
       }
-    }
-  }
-
-  onInteract(call: (character: Character) => void) {
-    return this.on('interact', call);
-  }
-
-  interact(character: Character) {
-    this.log('interact', { _canInteract: this._canInteract, character });
-    if (this._canInteract) {
-      this._canInteract = false;
-      const done = () => {
-        this.off('interact:done', done);
-        this.k.wait(0.5, () => {
-          this._canInteract = true;
-        });
-      };
-
-      this.on('interact:done', done);
-      this.emit('interact', character);
-    } else {
-      this.emit('interact:next', character);
     }
   }
 }

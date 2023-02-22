@@ -1,10 +1,12 @@
-import { GameObj, KaboomCtx } from 'kaboom';
+import { GameObj, KaboomCtx, LevelComp } from 'kaboom';
+import { clamp } from 'lodash';
 import { ICharacterDirectionEnum } from '../classes/character';
 
 const KCamera = (k: KaboomCtx) => {
   return {
-    smoothFollow: (target: GameObj) => {
+    smoothFollow: ({ level, target }: { level: GameObj; target: GameObj }) => {
       const currentPos = k.vec2(0, 0);
+      level = level as GameObj & LevelComp;
 
       return {
         update() {
@@ -34,7 +36,27 @@ const KCamera = (k: KaboomCtx) => {
             // lerp camera target position
             cameraTarget.pos = cameraTarget.pos.lerp(cameraTargetPos, 0.1);
 
-            k.camPos(cameraTarget.pos);
+            const pos = cameraTarget.pos;
+
+            const leftBoundary = level.get('left-boundary').shift() as GameObj;
+            const leftBoundaryPos = leftBoundary?.pos;
+
+            const rightBoundary = level.get('right-boundary').shift() as GameObj;
+            const rightBoundaryPos = rightBoundary?.pos;
+
+            const bounds = {
+              left: leftBoundaryPos.x + k.width() * 0.5 + leftBoundary.width,
+              right: rightBoundaryPos.x - k.width() * 0.5 - rightBoundary.width,
+              bottom: leftBoundaryPos.y - k.height() * 0.5 - leftBoundary.height
+            };
+
+            // clamp camera position to bounds
+            pos.x = clamp(pos.x, bounds.left, bounds.right);
+            pos.y = clamp(pos.y, 0, bounds.bottom);
+
+            console.log(pos);
+
+            k.camPos(pos);
           }
         }
       };
