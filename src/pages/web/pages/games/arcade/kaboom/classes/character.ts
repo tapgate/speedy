@@ -9,8 +9,11 @@ import {
   Collision,
   PosComp
 } from 'kaboom';
+import { clamp } from 'lodash';
+import { Mixin } from 'ts-mixer';
 import { IItem } from '../../../../../../../models/item';
 import { IKaboomCtxExt } from '../shared/types';
+import { EventObject } from './_event_object';
 import { GameObject } from './_object';
 
 export enum ICharacterColorEnum {
@@ -44,7 +47,7 @@ export interface ICharacterOpts {
   jumpSpeed?: number;
 }
 
-export class Character extends GameObject {
+export class Character extends Mixin(GameObject, EventObject) {
   private _name: string;
 
   public get name() {
@@ -55,6 +58,12 @@ export class Character extends GameObject {
 
   public get tag() {
     return this._tag;
+  }
+
+  private _spawnPoint!: Vec2;
+
+  public get spawnPoint() {
+    return this._spawnPoint;
   }
 
   private _isNPC = true;
@@ -200,6 +209,8 @@ export class Character extends GameObject {
   private _colorSprite: GameObj<SpriteComp> | undefined;
   private _outlineSprite: GameObj<SpriteComp> | undefined;
   private _outfitSprite: GameObj<SpriteComp> | undefined;
+
+  private _canInteract = true;
 
   constructor(k: IKaboomCtxExt, opts?: ICharacterOpts) {
     const {
@@ -500,6 +511,8 @@ export class Character extends GameObject {
 
     const body = this.object!;
 
+    this._spawnPoint = body.pos;
+
     body.instance = this;
 
     this.log('init', body);
@@ -631,6 +644,30 @@ export class Character extends GameObject {
         k.play('game-over');
         k.go('game-over');
       }
+    });
+
+    body.onCollideEnd('boundary', (obj: GameObj) => {
+      this.outOfBounds();
+    });
+
+    body.onUpdate(() => {
+      const pos = body.pos;
+
+      const leftBoundary = level.get('left-boundary').shift() as GameObj;
+      const leftBoundaryPos = leftBoundary?.pos;
+
+      const rightBoundary = level.get('right-boundary').shift() as GameObj;
+      const rightBoundaryPos = rightBoundary?.pos;
+
+      const bounds = {
+        left: leftBoundaryPos.x + leftBoundary.width + body.width * 0.25,
+        right: rightBoundaryPos.x - rightBoundary.width - body.width * 0.25,
+        bottom: leftBoundaryPos.y - leftBoundary.height - body.height * 0.25
+      };
+
+      // clamp camera position to bounds
+      pos.x = clamp(pos.x, bounds.left, bounds.right);
+      pos.y = clamp(pos.y, 0, bounds.bottom);
     });
 
     if (!this.isNPC) {
@@ -944,5 +981,36 @@ export class Character extends GameObject {
       x: false,
       y: false
     };
+  }
+
+  onInteract(call: (character: Character) => void) {
+    return this.on('interact', call);
+  }
+
+  interact(character: Character) {
+    this.log('interact', { _canInteract: this._canInteract, character });
+    if (this._canInteract) {
+      this._canInteract = false;
+      const done = () => {
+        this.off('interact:done', done);
+        this.k.wait(0.5, () => {
+          this._canInteract = true;
+        });
+      };
+
+      this.on('interact:done', done);
+      this.emit('interact', character);
+    } else {
+      this.emit('interact:next', character);
+    }
+  }
+
+  onOutOfBounds(call: (character: Character) => void) {
+    return this.on('outOfBounds', call);
+  }
+
+  outOfBounds() {
+    this.log('outOfBounds');
+    this.emit('outOfBounds');
   }
 }
